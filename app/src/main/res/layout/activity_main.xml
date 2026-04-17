@@ -1,43 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:paddingTop="46dp">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Software Engineering"
+        android:layout_gravity="center_horizontal"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/dateHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="DAY"
+        android:textSize="16sp"
+        android:textColor="@color/black"/>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
     <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <LinearLayout
             android:id="@+id/lecture_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp" />
+            android:padding="16dp">
+
+        </LinearLayout>
+
     </ScrollView>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/empty"
-        android:text="NO COURSES AVAILABLE TODAY"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:visibility="gone"
+        android:text="No Available Lectures"
+        android:textSize="20sp"
+        android:textColor="@color/black"/>
+    </FrameLayout>
+</LinearLayout>

@@ -33,7 +33,9 @@ public class MainActivity extends AppCompatActivity
 
     LinearLayout container;
     DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("hh:mm a");
+    DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
     TextView emptyMessage;
+    TextView dateHeader;
 
     @Override
     protected void onStop() {
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         container = findViewById(R.id.lecture_container);
         emptyMessage = findViewById(R.id.empty);
+        dateHeader = findViewById(R.id.dateHeader);
         // This connects the Java code to your XML layout
 
 
@@ -77,6 +80,8 @@ public class MainActivity extends AppCompatActivity
         container.removeAllViews();
         LocalTime currentTime = LocalTime.now();
         DayOfWeek today = LocalDate.now().getDayOfWeek();
+
+        dateHeader.setText(LocalDate.now().format(dateFormater));
 
         LayoutInflater inflater = getLayoutInflater();
         for (Lecture lecture : lectures) {
