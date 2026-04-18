@@ -30,7 +30,7 @@ public class ExplorerActivity extends AppCompatActivity
     TextView dayName;
 
     public String days[] = new String[]{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
-    public int index = 0;
+    public int index;
     DayOfWeek today = LocalDate.now().getDayOfWeek();
 
     DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("hh:mm a");
@@ -46,7 +46,6 @@ public class ExplorerActivity extends AppCompatActivity
         prevButton = findViewById(R.id.btn_prev);
         nextButton = findViewById(R.id.btn_next);
         dayName = findViewById(R.id.explorer_day_name);
-        dayName.setText(days[index]);
 
         Button LiveButton = findViewById(R.id.Live_button);
         LiveButton.setOnClickListener(v ->{
@@ -54,9 +53,10 @@ public class ExplorerActivity extends AppCompatActivity
         });
 
         for (int i = 0; i < days.length; i++) {
-            if(days[i].equals(today.toString()))
+            if(days[i].equalsIgnoreCase(today.toString()))
                 index = i;
         }
+        dayName.setText(days[index]);
 
         dateHeader = findViewById(R.id.dateHeader);
         dateHeader.setText(LocalDate.now().format(dateFormater));
