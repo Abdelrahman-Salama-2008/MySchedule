@@ -37,6 +37,16 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/time_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="TIME LEFT"
+        android:textSize="16sp"
+        android:textColor="@color/black"/>
+
+
 
     <FrameLayout
         android:layout_width="match_parent"

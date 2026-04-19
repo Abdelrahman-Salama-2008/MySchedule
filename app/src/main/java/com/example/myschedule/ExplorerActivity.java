@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -86,7 +87,6 @@ public class ExplorerActivity extends AppCompatActivity
         boolean foundAny = false; // if no course available no we will use it to display a message
         container.removeAllViews();
         LocalTime currentTime = LocalTime.now();
-        //today = LocalDate.now().getDayOfWeek();
 
         dateHeader.setText(LocalDate.now().format(dateFormater));
 
@@ -95,6 +95,19 @@ public class ExplorerActivity extends AppCompatActivity
             if (lecture.getDay().equalsIgnoreCase(days[index])) {
                 foundAny = true;
                 View lectureCard = inflater.inflate(R.layout.item_course, container, false);
+                View indicator = lectureCard.findViewById(R.id.type_indicator);
+                ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
+
+                if(lecture instanceof Online)
+                {
+                    indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
+                    roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
+                }
+                else
+                {
+                    indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
+                    roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
+                }
                 TextView code = lectureCard.findViewById(R.id.lecture_code);
                 TextView name = lectureCard.findViewById(R.id.lecture_name);
                 TextView prof = lectureCard.findViewById(R.id.lecture_prof);

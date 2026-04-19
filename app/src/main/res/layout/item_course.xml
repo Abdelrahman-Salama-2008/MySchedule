@@ -4,9 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardBackgroundColor="@color/light_grey"
+    app:cardBackgroundColor="@color/off_white"
     app:cardCornerRadius="16dp"
     app:cardUseCompatPadding="true">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="match_parent"
+            android:id="@+id/type_indicator"
+            android:background="@color/text_secondary"/>
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="code"
-            android:textColor="@color/dark_grey"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
         <TextView
@@ -28,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="name"
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -42,6 +56,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/person"
+            android:tint="@color/text_secondary"
             android:contentDescription="person icon"
             android:layout_marginEnd="8dp"/>
 
@@ -50,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="prof"
-            android:textColor="@color/dark_grey"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
         </LinearLayout>
@@ -67,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="section"
-                android:textColor="@color/black"
+                android:textColor="@color/text_primary"
                 android:textSize="12sp" />
 
             <TextView
@@ -75,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="credit"
-                android:textColor="@color/black"
+                android:textColor="@color/text_primary"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -91,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="day"
-                android:textColor="@color/black"
+                android:textColor="@color/text_primary"
                 android:textSize="12sp" />
 
 
@@ -114,7 +129,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="time"
-                android:textColor="@color/black"
+                android:textColor="@color/text_primary"
                 android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
@@ -143,9 +158,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="room"
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
             android:textSize="12sp" />
         </LinearLayout>
 
+    </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
