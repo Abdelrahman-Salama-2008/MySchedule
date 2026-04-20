@@ -6,6 +6,7 @@ public abstract class Lecture
 {
     private String code, name, prof, section,credit, day;
     private LocalTime Starttime, Endtime;
+    private boolean isNotified = false;
 
 
      public Lecture(String code, String name, String prof, String section, String credit, String day, LocalTime Starttime, LocalTime Endtime){
@@ -50,5 +51,14 @@ public abstract class Lecture
 
      public String getCredit(){
          return credit;
+     }
+
+     public boolean getIsNotified(){
+         return isNotified;
+     }
+
+     public void setIsNotified(boolean notified)
+     {
+         isNotified = notified;
      }
 }
