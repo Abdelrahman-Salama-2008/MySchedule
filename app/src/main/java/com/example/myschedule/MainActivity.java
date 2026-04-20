@@ -1,9 +1,6 @@
 package com.example.myschedule;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,7 +13,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.NotificationCompat;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -57,23 +53,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         container = findViewById(R.id.lecture_container);
         emptyMessage = findViewById(R.id.empty);
         dateHeader = findViewById(R.id.dateHeader);
-
-        // Create the Notification Channel
-        NotificationManager manager = getSystemService(NotificationManager.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "lecture_notifications",
-                    "Class Alerts",
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Notifications for upcoming classes");
-            manager.createNotificationChannel(channel);
-        }
 
 
         Button fullButton = findViewById(R.id.full_button);
@@ -84,6 +70,8 @@ public class MainActivity extends AppCompatActivity
 
         // This connects the Java code to your XML layout
         lectures = ScheduleData.getLectures();
+
+        new NotificationScheduler(this).scheduleNotifications();
 
         // Your test log
         Log.d("MainActivityLog", "Log message: MainActivity has started!");
@@ -108,28 +96,6 @@ public class MainActivity extends AppCompatActivity
         LayoutInflater inflater = getLayoutInflater();
         for (Lecture lecture : lectures) {
             if (lecture.getDay().equalsIgnoreCase(today.toString())) {
-
-                // Notification Logic: 45 Minute Warning
-                if (lecture.getStarttime().isAfter(currentTime)) {
-                    long minutesUntilStart = Duration.between(currentTime, lecture.getStarttime()).toMinutes();
-
-                    // If it's 45 mins or less, greater than 0, and we haven't notified yet
-                    if (minutesUntilStart > 0 && minutesUntilStart <= 45 && !lecture.getIsNotified()) {
-
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "lecture_notifications")
-                                .setSmallIcon(R.drawable.clock)
-                                .setContentTitle("Upcoming Class: " + lecture.getName())
-                                .setContentText("Starts in " + minutesUntilStart + " minutes in " + (lecture instanceof Attend ? ((Attend) lecture).getRoom() : "Online"))
-                                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                                .setAutoCancel(true);
-
-                        NotificationManager manager = getSystemService(NotificationManager.class);
-                        manager.notify(lecture.getName().hashCode(), builder.build());
-
-                        // Mark as notified so it doesn't spam every minute
-                        lecture.setIsNotified(true);
-                    }
-                }
 
                 if (lecture.getEndtime().isAfter(currentTime)) {
                     foundAny = true;
