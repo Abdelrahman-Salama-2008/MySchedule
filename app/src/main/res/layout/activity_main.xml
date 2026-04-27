@@ -16,7 +16,8 @@
         android:layout_gravity="center_horizontal"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black"
+        android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/dateHeader"
@@ -25,7 +26,8 @@
         android:layout_gravity="center_horizontal"
         android:text="DAY"
         android:textSize="16sp"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black"
+        android:layout_marginBottom="16dp"/>
 
     <Button
         android:id="@+id/full_button"
@@ -33,9 +35,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="Full Schedule"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:backgroundTint="@android:color/holo_blue_dark"
+        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:id="@+id/time_left"
@@ -43,39 +47,40 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="TIME LEFT"
-        android:textSize="16sp"
-        android:textColor="@color/black"/>
-
-
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="16dp"/>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
-            android:id="@+id/lecture_container"
+        <ScrollView
             android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/lecture_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+            </LinearLayout>
+
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:text="No Available Lectures"
+            android:textSize="20sp"
+            android:textColor="@color/black"/>
 
-        </LinearLayout>
-
-    </ScrollView>
-
-    <TextView
-        android:id="@+id/empty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textStyle="bold"
-        android:visibility="gone"
-        android:text="No Available Lectures"
-        android:textSize="20sp"
-        android:textColor="@color/black"/>
     </FrameLayout>
 </LinearLayout>

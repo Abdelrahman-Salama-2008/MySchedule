@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardBackgroundColor="@color/off_white"
-    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
     app:cardUseCompatPadding="true">
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,153 +15,177 @@
         android:orientation="horizontal">
 
         <View
+            android:id="@+id/type_indicator"
             android:layout_width="6dp"
             android:layout_height="match_parent"
-            android:id="@+id/type_indicator"
-            android:background="@color/text_secondary"/>
-
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/lecture_code"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="code"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/lecture_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="name"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:background="@android:color/darker_gray"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-        <ImageView
-            android:id="@+id/person_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/person"
-            android:tint="@color/text_secondary"
-            android:contentDescription="person icon"
-            android:layout_marginEnd="8dp"/>
-
-        <TextView
-            android:id="@+id/lecture_prof"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="prof"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
-                android:id="@+id/lecture_section"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="section"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/Lecture_credit"
+                android:id="@+id/lecture_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="credit"
-                android:textColor="@color/text_primary"
+                android:text="Code"
+                android:textColor="@android:color/darker_gray"
                 android:textSize="12sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/lecture_day"
-                android:layout_width="0dp"
+                android:id="@+id/lecture_name"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="day"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp" />
-
+                android:layout_marginTop="4dp"
+                android:text="Course Name"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/time_icon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/clock"
-                android:contentDescription="clock_icon"
-                android:layout_marginEnd="8dp"/>
+                <ImageView
+                    android:id="@+id/person_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/person"
+                    android:contentDescription="person icon"
+                    android:layout_marginEnd="8dp"/>
 
-            <TextView
-                android:id="@+id/lecture_time"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/lecture_prof"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Professor"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="time"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp" />
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/lecture_section"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Section"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/Lecture_credit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Credit Hours"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/lecture_day"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Day"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/time_icon"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/clock"
+                        android:contentDescription="clock_icon"
+                        android:layout_marginEnd="8dp"/>
+
+                    <TextView
+                        android:id="@+id/lecture_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Time"
+                        android:textColor="@color/black"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/room_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/location"
+                    android:contentDescription="location icon"
+                    android:layout_marginEnd="8dp"/>
+                <TextView
+                    android:id="@+id/lecture_room"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Room"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="16dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/notification_incard"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Remind Me"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"/>
+
+                <Button
+                    android:id="@+id/delete_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Delete"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@android:color/holo_red_dark"/>
+
             </LinearLayout>
         </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/room_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/location"
-            android:contentDescription="location icon"
-            android:layout_marginEnd="8dp"/>
-        <TextView
-            android:id="@+id/lecture_room"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="room"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp" />
-        </LinearLayout>
-
-    </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

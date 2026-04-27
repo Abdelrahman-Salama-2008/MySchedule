@@ -13,14 +13,15 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import androidx.appcompat.app.AppCompatActivity; // 1. Added missing import
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
-import org.w3c.dom.Text;
+import com.example.myschedule.database.RoomDB;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-// 2. Fixed "A" and "C" in AppCompatActivity
 public class ExplorerActivity extends AppCompatActivity
 {
     ArrayList<Lecture> lectures = new ArrayList<>();
@@ -28,30 +29,49 @@ public class ExplorerActivity extends AppCompatActivity
     TextView dateHeader;
     Button prevButton;
     Button nextButton;
+    Button addLectureButton;
     TextView dayName;
 
     public String days[] = new String[]{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
     public int index;
     DayOfWeek today = LocalDate.now().getDayOfWeek();
 
-    DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("hh:mm a");
+    DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("h:mm a");
     DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        lectures = ScheduleData.getLectures(this);
+        updateUI();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
 
-        lectures = ScheduleData.getLectures();//lecture data
+        lectures = ScheduleData.getLectures(this);//lecture data
         container = findViewById(R.id.lecture_container);
         prevButton = findViewById(R.id.btn_prev);
         nextButton = findViewById(R.id.btn_next);
         dayName = findViewById(R.id.explorer_day_name);
+        addLectureButton = findViewById(R.id.Add_lecture_button);
 
         Button LiveButton = findViewById(R.id.Live_button);
         LiveButton.setOnClickListener(v ->{
             finish();
         });
+
+        addLectureButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
+            // Grab whatever day is currently showing on your screen
+            String currentDay = dayName.getText().toString();
+            intent.putExtra("SELECTED_DAY", currentDay); // Put it in the intent!
+            startActivity(intent);
+        });
+
 
         for (int i = 0; i < days.length; i++) {
             if(days[i].equalsIgnoreCase(today.toString()))
@@ -84,21 +104,43 @@ public class ExplorerActivity extends AppCompatActivity
     }
 
     public void updateUI() {
-        boolean foundAny = false; // if no course available no we will use it to display a message
+        boolean foundAny = false;
         container.removeAllViews();
         LocalTime currentTime = LocalTime.now();
 
         dateHeader.setText(LocalDate.now().format(dateFormater));
 
         LayoutInflater inflater = getLayoutInflater();
+
+        // Sort the list by time before showing the cards
+        lectures.sort((lecture1, lecture2) -> {
+
+            String time1 = lecture1.getStarttime();
+            String time2 = lecture2.getStarttime();
+
+            try {
+
+                LocalTime t1 = LocalTime.parse(time1, myFormat);
+                LocalTime t2 = LocalTime.parse(time2, myFormat);
+
+
+                return t1.compareTo(t2);
+            } catch (Exception e) {
+                return 0; //return if there are any error
+            }
+        });
+
         for (Lecture lecture : lectures) {
+
+
+
             if (lecture.getDay().equalsIgnoreCase(days[index])) {
                 foundAny = true;
                 View lectureCard = inflater.inflate(R.layout.item_course, container, false);
                 View indicator = lectureCard.findViewById(R.id.type_indicator);
                 ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
 
-                if(lecture instanceof Online)
+                if(lecture.getRoom().equalsIgnoreCase("Online"))
                 {
                     indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
                     roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
@@ -117,18 +159,52 @@ public class ExplorerActivity extends AppCompatActivity
                 TextView time = lectureCard.findViewById(R.id.lecture_time);
                 TextView room = lectureCard.findViewById(R.id.lecture_room);
 
+                Button deleteButton = lectureCard.findViewById(R.id.delete_button);
+                deleteButton.setVisibility(View.VISIBLE);
+                SwitchCompat notification_incard = lectureCard.findViewById(R.id.notification_incard);
+                notification_incard.setChecked(lecture.getWantsNotification());
+                notification_incard.setVisibility(View.VISIBLE);
+
+                notification_incard.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    lecture.setWantsNotification(isChecked);
+                    RoomDB.getInstance(ExplorerActivity.this).mainDAO().updateNotification(lecture.getId(), isChecked);
+
+                    NotificationScheduler scheduler = new NotificationScheduler(ExplorerActivity.this);
+                    if (isChecked) {
+                        scheduler.scheduleSingleLecture(lecture);
+                    } else {
+                        scheduler.cancelSingleLecture(lecture);
+                    }
+                });
+
                 code.setText("Code: " + lecture.getCode());
                 name.setText("Course: " + lecture.getName());
                 prof.setText(lecture.getProf());
                 section.setText("Section: " + lecture.getSection());
                 credit.setText("Credit Hours: " + lecture.getCredit());
                 day.setText("Day: " + lecture.getDay());
-                time.setText(lecture.getStarttime().format(myFormat).toString() + " - " + lecture.getEndtime().format(myFormat).toString());
-                if (lecture instanceof Attend) {
-                    room.setText(((Attend) lecture).getRoom());
-                } else {
-                    room.setText("Online");
-                }
+                time.setText(lecture.getStarttime() + " - " + lecture.getEndtime());
+                room.setText(lecture.getRoom());
+
+
+                deleteButton.setOnClickListener(v -> {
+                    AlertDialog.Builder deleteConfirmation = new AlertDialog.Builder(this);
+                    deleteConfirmation.setTitle("Delete Lecture?");
+                    deleteConfirmation.setMessage("Are you sure you want to delete this lecture?");
+
+                    deleteConfirmation.setPositiveButton("Yes", (dialog, which) -> {
+                        new NotificationScheduler(this).cancelSingleLecture(lecture);
+                        RoomDB.getInstance(ExplorerActivity.this).mainDAO().delete(lecture);
+                        lectures.remove(lecture);
+                        updateUI();
+                    });
+
+                    deleteConfirmation.setNegativeButton("No", (dialog, which) -> {
+                        dialog.dismiss();
+                    });
+
+                    deleteConfirmation.show();
+                });
 
                 container.addView(lectureCard);
             }

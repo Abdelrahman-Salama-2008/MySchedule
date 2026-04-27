@@ -1,64 +1,151 @@
 package com.example.myschedule;
 
-import java.time.LocalTime;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import java.io.Serializable;
 
-public abstract class Lecture
-{
-    private String code, name, prof, section,credit, day;
-    private LocalTime Starttime, Endtime;
-    private boolean isNotified = false;
+@Entity(tableName = "LectureDetails")
+public class Lecture implements Serializable{
+    @ColumnInfo(name = "id")
+    @PrimaryKey(autoGenerate = true)
+    private int id = 0;
+    @ColumnInfo(name = "code")
+    private String code;
+
+    @ColumnInfo(name = "name")
+    private String name;
+
+    @ColumnInfo(name = "prof")
+    private String prof;
+
+    @ColumnInfo(name = "section")
+    private String section;
+
+    @ColumnInfo(name = "credit")
+    private String credit;
+
+    @ColumnInfo(name = "day")
+    private String day;
+
+    @ColumnInfo(name = "starttime")
+    private String starttime;
+
+    @ColumnInfo(name = "endtime")
+    private String endtime;
+
+    @ColumnInfo(name = "room")
+    private String room;
+
+    @ColumnInfo(name = "wantsNotification")
+    private boolean wantsNotification;
+
+    public Lecture(String code, String name, String prof, String section, String credit, String day, String starttime, String endtime, String room, boolean wantsNotification) {
+        this.code = code;
+        this.name = name;
+        this.prof = prof;
+        this.section = section;
+        this.credit = credit;
+        this.day = day;
+        this.starttime = starttime;
+        this.endtime = endtime;
+
+        this.room = room;
+        this.wantsNotification = wantsNotification;
+    }
+
+    public Lecture() {
+    }
+
+    public boolean getWantsNotification()
+    {
+        return wantsNotification;
+    }
+
+    public void setWantsNotification(boolean wantsNotification)
+    {
+        this.wantsNotification = wantsNotification;
+    }
 
 
-     public Lecture(String code, String name, String prof, String section, String credit, String day, LocalTime Starttime, LocalTime Endtime){
-         this.code = code;
-         this.name = name;
-         this.prof = prof;
-         this.section = section;
-         this.credit = credit;
-         this.day = day;
-         this.Starttime = Starttime;
-         this.Endtime = Endtime;
-     }
 
-     public String getCode(){
-         return code;
-     }
+    public String getCode() {
+        return code;
+    }
 
-     public String getName(){
-         return name;
-     }
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-     public String getProf(){
-         return prof;
-     }
+    public String getName() {
+        return name;
+    }
 
-     public String getSection(){
-         return section;
-     }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-     public String getDay(){
-         return day;
-     }
+    public String getProf() {
+        return prof;
+    }
 
-     public LocalTime getStarttime(){
-         return Starttime;
-     }
+    public void setProf(String prof) {
+        this.prof = prof;
+    }
 
-    public LocalTime getEndtime(){
-         return Endtime;
-     }
+    public String getSection() {
+        return section;
+    }
 
+    public void setSection(String section) {
+        this.section = section;
+    }
 
-     public String getCredit(){
-         return credit;
-     }
+    public String getCredit() {
+        return credit;
+    }
 
-     public boolean getIsNotified(){
-         return isNotified;
-     }
+    public void setCredit(String credit) {
+        this.credit = credit;
+    }
 
-     public void setIsNotified(boolean notified)
-     {
-         isNotified = notified;
-     }
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public String getStarttime() {
+        return starttime;
+    }
+
+    public void setStarttime(String starttime) {
+        this.starttime = starttime;
+    }
+
+    public String getEndtime() {
+        return endtime;
+    }
+
+    public void setEndtime(String endtime) {
+        this.endtime = endtime;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

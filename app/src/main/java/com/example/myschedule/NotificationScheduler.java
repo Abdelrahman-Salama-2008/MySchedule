@@ -1,65 +1,91 @@
 package com.example.myschedule;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.ArrayList;
 
 public class NotificationScheduler {
     private Context context;
-    AlarmManager alarmManager;
+    private AlarmManager alarmManager;
+
     public NotificationScheduler(Context context) {
         this.context = context;
-        alarmManager = context.getSystemService(AlarmManager.class);
+        this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-    ArrayList<Lecture> lectures = new ArrayList<>();
-    String days[] = new String[]{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
 
+    public void scheduleSingleLecture(Lecture lecture) {
+        if (!lecture.getWantsNotification()) return;
 
-    public void scheduleNotifications()
-    {
-        lectures = ScheduleData.getLectures();
-        for (Lecture lecture : lectures)
-        {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, lecture.getStarttime().getHour());
-            calendar.set(Calendar.MINUTE, lecture.getStarttime().getMinute());
-            for(int i = 0; i < 7; i++){
-                if(lecture.getDay().equalsIgnoreCase(days[i]))
-                {
-                    calendar.set(Calendar.DAY_OF_WEEK, i + 1);
-                }
-            }
+        Calendar calendar = calculateAlarmTime(lecture);
+        PendingIntent pendingIntent = getPendingIntent(lecture);
 
-            calendar.add(Calendar.MINUTE, -45);
-
-            if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-                calendar.add(Calendar.DAY_OF_YEAR, 7);
-            }
-
-
-            int ID = (lecture.getName() + lecture.getDay()).hashCode();
-
-            Intent intent = new Intent(context, NotificationReceiver.class);
-            intent.putExtra("lecture_name", lecture.getName());
-
-
-
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, ID, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (alarmManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                 }
             } else {
-                // For older Android versions, just set it
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
             }
         }
     }
 
+    public void cancelSingleLecture(Lecture lecture) {
+        PendingIntent pendingIntent = getPendingIntent(lecture);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
+    }
+
+
+    public void scheduleAllLectures() {
+        ArrayList<Lecture> lectures = ScheduleData.getLectures(context);
+        for (Lecture lecture : lectures) {
+            scheduleSingleLecture(lecture);
+        }
+    }
+
+
+    private Calendar calculateAlarmTime(Lecture lecture) {
+        Calendar calendar = Calendar.getInstance();
+        LocalTime startTime = TimeConverters.convertTime(lecture.getStarttime());
+
+        calendar.set(Calendar.HOUR_OF_DAY, startTime.getHour());
+        calendar.set(Calendar.MINUTE, startTime.getMinute());
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        String[] days = {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
+        for (int i = 0; i < days.length; i++) {
+            if (lecture.getDay().equalsIgnoreCase(days[i])) {
+                calendar.set(Calendar.DAY_OF_WEEK, i + 1);
+            }
+        }
+
+        calendar.add(Calendar.MINUTE, -45);
+
+        if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 7);
+        }
+        return calendar;
+    }
+
+    private PendingIntent getPendingIntent(Lecture lecture) {
+        int id = lecture.getId();
+        Intent intent = new Intent(context, NotificationReceiver.class);
+        intent.putExtra("lecture_name", lecture.getName());
+
+        return PendingIntent.getBroadcast(
+                context,
+                id,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
 }
