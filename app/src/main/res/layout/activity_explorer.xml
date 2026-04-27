@@ -46,11 +46,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/Live_button"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="55dp"
             android:text="Live Schedule"
-            android:textColor="@color/white"
+            android:textColor="@color/color_online"
             android:textSize="14sp"
             android:textAllCaps="false"
             android:textStyle="bold"
@@ -58,8 +59,9 @@
             android:insetLeft="0dp"
             android:insetRight="0dp"
             android:paddingHorizontal="4dp"
+            app:strokeColor="@color/color_online"
+            app:strokeWidth="2dp"
             app:cornerRadius="12dp"
-            app:backgroundTint="@color/color_online"
             android:layout_marginEnd="8dp" />
 
         <com.google.android.material.button.MaterialButton

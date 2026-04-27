@@ -128,6 +128,29 @@ public class ExplorerActivity extends AppCompatActivity
             }
         });
 
+        Button deleteAllButton = findViewById(R.id.deleteAll_button);
+
+        deleteAllButton.setOnClickListener(v ->{
+            AlertDialog.Builder deleteConfirmation = new AlertDialog.Builder(this);
+            deleteConfirmation.setTitle("Delete All Lectures?");
+            deleteConfirmation.setMessage("Are you sure you want to delete all lectures?, This action cannot be undone.");
+
+            deleteConfirmation.setPositiveButton("Yes", (dialog, which) -> {
+                NotificationScheduler scheduler = new NotificationScheduler(this);
+                for(Lecture lecture: lectures){
+                    scheduler.cancelSingleLecture(lecture);
+                }
+                RoomDB.getInstance(ExplorerActivity.this).mainDAO().deleteAll();
+                lectures.clear();
+                updateUI();
+            });
+
+            deleteConfirmation.setNegativeButton("No", (dialog, which) -> {
+                dialog.dismiss();
+            });
+            deleteConfirmation.show();
+        });
+
         for (Lecture lecture : lectures) {
 
 
@@ -156,6 +179,7 @@ public class ExplorerActivity extends AppCompatActivity
                 TextView day = lectureCard.findViewById(R.id.lecture_day);
                 TextView time = lectureCard.findViewById(R.id.lecture_time);
                 TextView room = lectureCard.findViewById(R.id.lecture_room);
+                Button editButton = lectureCard.findViewById(R.id.edit_button); //added this line
 
                 Button deleteButton = lectureCard.findViewById(R.id.delete_button);
                 deleteButton.setVisibility(View.VISIBLE);
@@ -203,6 +227,25 @@ public class ExplorerActivity extends AppCompatActivity
 
                     deleteConfirmation.show();
                 });
+
+                editButton.setOnClickListener(v -> {
+                            Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
+                            intent.putExtra("IS_EDIT_MODE", true);
+                            intent.putExtra("SELECTED_DAY", days[index]);
+                            intent.putExtra("LECTURE_ID", lecture.getId());
+                            intent.putExtra("LECTURE_CODE", lecture.getCode());
+                            intent.putExtra("LECTURE_NAME", lecture.getName());
+                            intent.putExtra("LECTURE_PROF", lecture.getProf());
+                            intent.putExtra("LECTURE_SECTION", lecture.getSection());
+                            intent.putExtra("LECTURE_CREDIT", lecture.getCredit());
+                            intent.putExtra("LECTURE_DAY", lecture.getDay());
+                            intent.putExtra("LECTURE_STARTTIME", lecture.getStarttime());
+                            intent.putExtra("LECTURE_ENDTIME", lecture.getEndtime());
+                            intent.putExtra("LECTURE_ROOM", lecture.getRoom());
+                            intent.putExtra("LECTURE_NOTIFICATION", lecture.getWantsNotification());
+                            intent.putExtra("LECTURE_REMINDER", lecture.getReminderMinutes());
+                            startActivity(intent);
+                        });
 
                 container.addView(lectureCard);
             }

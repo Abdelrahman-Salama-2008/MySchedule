@@ -40,7 +40,10 @@ public class Lecture implements Serializable{
     @ColumnInfo(name = "wantsNotification")
     private boolean wantsNotification;
 
-    public Lecture(String code, String name, String prof, String section, String credit, String day, String starttime, String endtime, String room, boolean wantsNotification) {
+    @ColumnInfo(name = "reminderMinutes")
+    private int reminderMinutes;
+
+    public Lecture(String code, String name, String prof, String section, String credit, String day, String starttime, String endtime, String room, boolean wantsNotification,int reminderMinutes) {
         this.code = code;
         this.name = name;
         this.prof = prof;
@@ -52,6 +55,7 @@ public class Lecture implements Serializable{
 
         this.room = room;
         this.wantsNotification = wantsNotification;
+        this.reminderMinutes = reminderMinutes;
     }
 
     public Lecture() {
@@ -147,5 +151,13 @@ public class Lecture implements Serializable{
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getReminderMinutes() {
+        return reminderMinutes;
+    }
+
+    public void setReminderMinutes(int reminderMinutes) {
+        this.reminderMinutes = reminderMinutes;
     }
 }

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,19 +19,14 @@ import androidx.appcompat.widget.SwitchCompat;
 
 //database imports
 import com.example.myschedule.database.RoomDB;
-import com.example.myschedule.Lecture;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import java.time.LocalTime;
 
 public class AddLectureActivity extends AppCompatActivity {
 
     Button timeButton;
     TextView timeUI;
-
-    TimePickerDialog.OnTimeSetListener timeSetListener;
 
     LocalTime savetime;
     static List<Lecture> lectures;
@@ -41,24 +37,27 @@ public class AddLectureActivity extends AppCompatActivity {
     String startTime, endTime;
     String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day;
     boolean onlineText, notificationText;
-    Spinner daySpinner;
+    Spinner daySpinner, reminderSpinner;
+    LinearLayout reminderContainer;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_lecture);
+
         //database
         database = RoomDB.getInstance(this);
         lectures = database.mainDAO().getAll();
 
         timeUI = findViewById(R.id.display_time);
 
-
         Context context = this;
         timeButton = findViewById(R.id.pick_time);
+
+        TextView title = findViewById(R.id.activity_title);
+        String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday"};
 
         code = findViewById(R.id.Course_Code);
         name = findViewById(R.id.Course_name);
@@ -70,18 +69,75 @@ public class AddLectureActivity extends AppCompatActivity {
         addButton = findViewById(R.id.add_button);
         cancelButton = findViewById(R.id.cancel_button);
         room = findViewById(R.id.Room_number);
+        daySpinner = findViewById(R.id.day_spinner);
+        reminderContainer = findViewById(R.id.reminder_container);
 
         onlineText = onlineSwitch.isChecked();
 
-        daySpinner = findViewById(R.id.day_spinner);
-        String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, days);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         daySpinner.setAdapter(adapter);
 
-        String passedDay = getIntent().getStringExtra("SELECTED_DAY");
+        //reminder spinner
+        String[] reminderOptions = {"5 mins before", "10 mins before", "15 mins before", "30 mins before", "1 hour before"};
+        int[] reminderValues = {5, 10, 15, 30, 60};
 
-        if (passedDay != null) {
+        reminderSpinner = findViewById(R.id.reminder_spinner);
+        ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, reminderOptions);
+        reminderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        reminderSpinner.setAdapter(reminderAdapter);
+
+        // Dynamic visibility for Reminder Spinner
+        reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
+
+        notification.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            reminderContainer.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
+        if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
+            title.setText("Edit Lecture");
+            addButton.setText("Update");
+            code.setText(getIntent().getStringExtra("LECTURE_CODE"));
+            name.setText(getIntent().getStringExtra("LECTURE_NAME"));
+            prof.setText(getIntent().getStringExtra("LECTURE_PROF"));
+            section.setText(getIntent().getStringExtra("LECTURE_SECTION"));
+            credit.setText(getIntent().getStringExtra("LECTURE_CREDIT"));
+
+            if(getIntent().getStringExtra("LECTURE_ROOM").equalsIgnoreCase("Online")) {
+                onlineSwitch.setChecked(true);
+            } else {
+                room.setText(getIntent().getStringExtra("LECTURE_ROOM"));
+            }
+
+            notification.setChecked(getIntent().getBooleanExtra("LECTURE_NOTIFICATION", false));
+            reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
+
+            // Set the saved reminder value
+            int savedMins = getIntent().getIntExtra("LECTURE_REMINDER", 15);
+            for (int i = 0; i < reminderValues.length; i++) {
+                if (reminderValues[i] == savedMins) {
+                    reminderSpinner.setSelection(i);
+                    break;
+                }
+            }
+
+            startTime = getIntent().getStringExtra("LECTURE_STARTTIME");
+            endTime = getIntent().getStringExtra("LECTURE_ENDTIME");
+            timeUI.setText("Start: " + startTime + "\nEnd: " + endTime);
+            timeUI.setVisibility(View.VISIBLE);
+
+            for(int i = 0; i < days.length; i++) {
+                if(days[i].equalsIgnoreCase(getIntent().getStringExtra("LECTURE_DAY"))) {
+                    daySpinner.setSelection(i);
+                    break;
+                }
+            }
+        } else {
+            timeUI.setVisibility(View.GONE);
+        }
+
+        String passedDay = getIntent().getStringExtra("SELECTED_DAY");
+        if (passedDay != null && !getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
             for (int i = 0; i < days.length; i++) {
                 if (days[i].equalsIgnoreCase(passedDay)) {
                     daySpinner.setSelection(i);
@@ -90,73 +146,70 @@ public class AddLectureActivity extends AppCompatActivity {
             }
         }
 
-
-        timeUI.setVisibility(View.GONE);
-
-        onlineSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-        {
+        onlineSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 room.setVisibility(View.GONE);
-
             } else {
                 room.setVisibility(View.VISIBLE);
             }
         });
 
-
-
         cancelButton.setOnClickListener(v -> finish()); //the cancel button closes the activity
 
-        addButton.setOnClickListener(new View.OnClickListener() {// the save button saves the data to the database
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                 codeText = code.getText().toString();
-                 nameText = name.getText().toString();
-                 profText = prof.getText().toString();
-                 sectionText = section.getText().toString();
-                 creditText = credit.getText().toString();
-                 onlineText = onlineSwitch.isChecked();
-                 notificationText = notification.isChecked();
+                codeText = code.getText().toString();
+                nameText = name.getText().toString();
+                profText = prof.getText().toString();
+                sectionText = section.getText().toString();
+                creditText = credit.getText().toString();
+                onlineText = onlineSwitch.isChecked();
+                notificationText = notification.isChecked();
                 day = daySpinner.getSelectedItem().toString();
                 starttimesaved = startTime;
                 endtimesaved = endTime;
-                if(onlineText)
 
+                // Grab the selected reminder time
+                int selectedReminderMinutes = reminderValues[reminderSpinner.getSelectedItemPosition()];
+
+                if(onlineText)
                     roomText = "Online";
                 else
                     roomText = room.getText().toString();
 
-                if(isValid()){
-                Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText);
-                database.mainDAO().insert(lecture);
-                finish();
+                if(isValid()) {
+                    if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
+                        // Pass selectedReminderMinutes to the constructor
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes);
+                        int passedId = getIntent().getIntExtra("LECTURE_ID", -1);
+                        lecture.setId(passedId);
+                        database.mainDAO().update(lecture);
+                    } else {
+                        // Pass selectedReminderMinutes to the constructor
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes);
+                        database.mainDAO().insert(lecture);
+                    }
+                    finish();
                 }
-
             }
+        });
 
-            });
-
-
-
-        timeButton.setOnClickListener(new View.OnClickListener()// the time button opens a time picker dialog
-        {
+        timeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 TimePickerDialog startDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                     @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute)
-                    {
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         savetime = LocalTime.of(hourOfDay, minute);
                         startTime = savetime.format(TimeConverters.myFormat);
 
-                        TimePickerDialog endDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener()
-                        {
+                        TimePickerDialog endDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                                 savetime = LocalTime.of(hourOfDay, minute);
                                 endTime =  savetime.format(TimeConverters.myFormat);
-                                timeUI.setText("Start: " + startTime + "\nEnd: " +  endTime);
+                                timeUI.setText("Start: " + startTime + "\nEnd: " + endTime);
                                 timeUI.setVisibility(View.VISIBLE);
                             }
                         }, savetime.getHour(), savetime.getMinute(), false);
@@ -165,34 +218,28 @@ public class AddLectureActivity extends AppCompatActivity {
 
                 }, LocalTime.now().getHour(), LocalTime.now().getMinute(), false);
                 startDialog.show();
-                timeUI.setVisibility(View.VISIBLE);
             }
         });
-
     }
 
     private boolean isValid() {
         boolean valid = true;
 
-        // 1. Check Course Code
         if (code.getText().toString().trim().isEmpty()) {
             code.setError("Course Code is required");
             valid = false;
         }
 
-        // 2. Check Course Name
         if (name.getText().toString().trim().isEmpty()) {
             name.setError("Course Name is required");
             valid = false;
         }
 
-        // 3. Check Professor
         if (prof.getText().toString().trim().isEmpty()) {
             prof.setError("Professor Name is required");
             valid = false;
         }
 
-        // 4. Check Section & Credits
         if (section.getText().toString().trim().isEmpty()) {
             section.setError("Section is required");
             valid = false;
@@ -202,16 +249,11 @@ public class AddLectureActivity extends AppCompatActivity {
             valid = false;
         }
 
-        // 5. Special Check: Room Number vs Online Switch
-        // If it's an online class, we don't strictly need a room number!
         if (!onlineSwitch.isChecked() && room.getText().toString().trim().isEmpty()) {
             room.setError("Room number is required for in-person classes");
             valid = false;
         }
 
-        // 6. Special Check: Time Picker
-        // EditTexts have the cool .setError() UI, but TextViews don't show it well.
-        // We use a Toast for the time warning.
         if (timeUI.getVisibility() == View.GONE || timeUI.getText().toString().isEmpty()) {
             Toast.makeText(this, "Please select a start and end time", Toast.LENGTH_LONG).show();
             valid = false;
@@ -219,5 +261,4 @@ public class AddLectureActivity extends AppCompatActivity {
 
         return valid;
     }
-
 }

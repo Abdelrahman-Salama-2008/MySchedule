@@ -27,14 +27,14 @@
             android:letterSpacing="-0.02"/>
 
         <TextView
-        android:id="@+id/activity_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Lecture"
-        android:textColor="@color/success_green"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"/>
+            android:id="@+id/activity_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Lecture"
+            android:textColor="@color/success_green"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
     </LinearLayout>
 
     <View
@@ -85,7 +85,33 @@
                     android:text="Enable Notifications"
                     android:textSize="16sp"
                     android:textStyle="bold"
+                    android:layout_marginBottom="12dp"
                     android:textColor="@color/text_secondary"/>
+
+                <LinearLayout
+                    android:id="@+id/reminder_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remind me:"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                    android:id="@+id/reminder_spinner"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:backgroundTint="@color/text_primary" />
+                </LinearLayout>
             </LinearLayout>
 
             <EditText
@@ -193,7 +219,8 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/bg_input_field"
-                android:padding="12dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="12dp"
                 android:layout_marginBottom="32dp">
 
                 <TextView
@@ -201,9 +228,9 @@
                     android:layout_height="wrap_content"
                     android:text="Class Time:"
                     android:textColor="@color/text_secondary"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    android:layout_marginEnd="12dp"/>
+                    android:layout_marginEnd="6dp"/>
 
                 <TextView
                     android:id="@+id/display_time"
@@ -211,6 +238,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:textColor="@color/color_online"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:visibility="gone"/>
 

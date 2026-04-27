@@ -68,7 +68,7 @@ public class NotificationScheduler {
             }
         }
 
-        calendar.add(Calendar.MINUTE, -45);
+        calendar.add(Calendar.MINUTE, -lecture.getReminderMinutes());
 
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 7);

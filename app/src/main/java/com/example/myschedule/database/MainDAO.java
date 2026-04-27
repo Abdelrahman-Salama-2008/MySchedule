@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import static androidx.room.OnConflictStrategy.REPLACE;
 
@@ -24,4 +25,7 @@ public interface MainDAO {
 
     @Query("UPDATE LectureDetails SET wantsNotification = :wantsNotification WHERE id = :id")
     void updateNotification(int id, boolean wantsNotification);
+
+    @Update
+    void update(Lecture lecture);
 }
