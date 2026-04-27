@@ -66,9 +66,7 @@ public class ExplorerActivity extends AppCompatActivity
 
         addLectureButton.setOnClickListener(v -> {
             Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
-            // Grab whatever day is currently showing on your screen
-            String currentDay = dayName.getText().toString();
-            intent.putExtra("SELECTED_DAY", currentDay); // Put it in the intent!
+            intent.putExtra("SELECTED_DAY", days[index]);
             startActivity(intent);
         });
 

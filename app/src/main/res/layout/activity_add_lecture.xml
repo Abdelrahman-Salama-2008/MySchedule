@@ -5,195 +5,259 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AddLectureActivity"
-    android:background="@color/white"
+    android:background="@color/off_white"
     android:orientation="vertical"
-    android:paddingTop="46dp"
+    android:paddingTop="32dp"
     android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Software Engineering"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:letterSpacing="-0.02"/>
+
+        <TextView
+        android:id="@+id/activity_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Lecture"
+        android:textColor="@color/success_green"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/shadow_gradient" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Software Engineering"
-                android:layout_gravity="center_horizontal"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/dateHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="DAY"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Add Lecture"
-                android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="24dp"/>
+            android:padding="24dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="@drawable/bg_input_field"
+                android:padding="16dp"
+                android:layout_marginBottom="24dp">
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/online_Switch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="12dp"
                     android:text="Online Class"
                     android:textSize="16sp"
-                    android:textColor="@color/black"/>
+                    android:textStyle="bold"
+                    android:textColor="@color/text_secondary"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/border_grey"
+                    android:layout_marginBottom="12dp"/>
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/notification_Switch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
                     android:text="Enable Notifications"
                     android:textSize="16sp"
-                    android:textColor="@color/black"/>
+                    android:textStyle="bold"
+                    android:textColor="@color/text_secondary"/>
+            </LinearLayout>
 
-                <EditText
-                    android:id="@+id/Course_Code"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Code: "
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:inputType="text" />
+            <EditText
+                android:id="@+id/Course_Code"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp"
+                android:hint="Course Code (e.g. SE1101)"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:inputType="text" />
 
-                <EditText
-                    android:id="@+id/Course_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:hint="Course Name: "
-                    android:inputType="text" />
+            <EditText
+                android:id="@+id/Course_name"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp"
+                android:hint="Course Name"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:inputType="text" />
 
-                <EditText
-                    android:id="@+id/Course_Professor"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:hint="Professor Name: "
-                    android:inputType="text" />
+            <EditText
+                android:id="@+id/Course_Professor"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp"
+                android:hint="Professor Name"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:inputType="text" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
                 <EditText
                     android:id="@+id/Course_Section"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:hint="Section: "
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="16dp"
+                    android:hint="Section"
+                    android:textColorHint="@color/text_secondary"
+                    android:textColor="@color/text_primary"
                     android:inputType="text" />
+
+                <Space
+                    android:layout_width="12dp"
+                    android:layout_height="wrap_content" />
 
                 <EditText
                     android:id="@+id/Course_Credit"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="16dp"
+                    android:hint="Credit Hours"
+                    android:textColorHint="@color/text_secondary"
+                    android:textColor="@color/text_primary"
+                    android:inputType="number" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/Room_number"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp"
+                android:hint="Room Number (e.g. 25-1.026)"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:inputType="text" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/day_spinner"
                     android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="12dp"
+                    android:backgroundTint="@color/black"
+                    android:spinnerMode="dropdown"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_input_field"
+                android:padding="12dp"
+                android:layout_marginBottom="32dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:hint="Credit Hours: "
-                    android:inputType="text" />
+                    android:text="Class Time:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp"/>
 
-                <EditText
-                    android:id="@+id/Room_number"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/display_time"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    android:textColorHint="@color/dark_grey"
-                    android:textColor="@color/black"
-                    android:hint="Room: "
-                    android:inputType="text" />
+                    android:textColor="@color/color_online"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="32dp">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pick_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="Set Time"
+                    android:textColor="@color/white"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/color_online"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Start-End Time: "
-                        android:textColor="@color/black"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="8dp"/>
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/display_time"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/black"
-                        android:visibility="gone"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
 
-                    <Button
-                        android:id="@+id/pick_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Pick Time"
-                        android:textColor="@color/white"
-                        app:backgroundTint="@android:color/holo_blue_dark"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cancel_button"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="55dp"
+                    android:text="Cancel"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:strokeColor="@color/border_grey"
+                    app:strokeWidth="2dp"
+                    app:cornerRadius="12dp"
+                    android:layout_marginEnd="8dp"/>
 
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-
-                    <Button
-                        android:id="@+id/add_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Add Lecture"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="16dp"
-                        app:backgroundTint="@android:color/holo_green_dark"/>
-
-                    <Button
-                        android:id="@+id/cancel_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Cancel"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@android:color/darker_gray"/>
-
-                </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/add_button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="55dp"
+                    android:text="Add Lecture"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/success_green"
+                    android:layout_marginStart="8dp"/>
 
             </LinearLayout>
 

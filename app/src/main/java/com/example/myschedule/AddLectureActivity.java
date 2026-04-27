@@ -4,8 +4,10 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TimePicker;
@@ -28,7 +30,6 @@ public class AddLectureActivity extends AppCompatActivity {
     Button timeButton;
     TextView timeUI;
 
-    TextView dateHeader;
     TimePickerDialog.OnTimeSetListener timeSetListener;
 
     LocalTime savetime;
@@ -40,7 +41,7 @@ public class AddLectureActivity extends AppCompatActivity {
     String startTime, endTime;
     String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day;
     boolean onlineText, notificationText;
-
+    Spinner daySpinner;
 
 
     @Override
@@ -54,9 +55,6 @@ public class AddLectureActivity extends AppCompatActivity {
         lectures = database.mainDAO().getAll();
 
         timeUI = findViewById(R.id.display_time);
-
-        dateHeader = findViewById(R.id.dateHeader);
-        dateHeader.setText(getIntent().getStringExtra("SELECTED_DAY"));
 
 
         Context context = this;
@@ -75,13 +73,29 @@ public class AddLectureActivity extends AppCompatActivity {
 
         onlineText = onlineSwitch.isChecked();
 
+        daySpinner = findViewById(R.id.day_spinner);
+        String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, days);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        daySpinner.setAdapter(adapter);
+
+        String passedDay = getIntent().getStringExtra("SELECTED_DAY");
+
+        if (passedDay != null) {
+            for (int i = 0; i < days.length; i++) {
+                if (days[i].equalsIgnoreCase(passedDay)) {
+                    daySpinner.setSelection(i);
+                    break;
+                }
+            }
+        }
+
 
         timeUI.setVisibility(View.GONE);
 
         onlineSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
         {
             if (isChecked) {
-                room.setText("Online");
                 room.setVisibility(View.GONE);
 
             } else {
@@ -104,7 +118,7 @@ public class AddLectureActivity extends AppCompatActivity {
                  creditText = credit.getText().toString();
                  onlineText = onlineSwitch.isChecked();
                  notificationText = notification.isChecked();
-                day = getIntent().getStringExtra("SELECTED_DAY");
+                day = daySpinner.getSelectedItem().toString();
                 starttimesaved = startTime;
                 endtimesaved = endTime;
                 if(onlineText)
