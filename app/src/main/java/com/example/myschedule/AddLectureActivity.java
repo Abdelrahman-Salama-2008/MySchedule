@@ -79,8 +79,8 @@ public class AddLectureActivity extends AppCompatActivity {
         daySpinner.setAdapter(adapter);
 
         //reminder spinner
-        String[] reminderOptions = {"5 mins before", "10 mins before", "15 mins before", "30 mins before", "1 hour before"};
-        int[] reminderValues = {5, 10, 15, 30, 60};
+        String[] reminderOptions = {"5 mins before", "10 mins before", "15 mins before", "30 mins before", "45 mins before", "1 hour before"};
+        int[] reminderValues = {5, 10, 15, 30, 45, 60};
 
         reminderSpinner = findViewById(R.id.reminder_spinner);
         ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, reminderOptions);

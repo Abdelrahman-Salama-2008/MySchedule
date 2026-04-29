@@ -187,6 +187,8 @@ public class MainActivity extends AppCompatActivity
                     TextView time = lectureCard.findViewById(R.id.lecture_time);
                     TextView room = lectureCard.findViewById(R.id.lecture_room);
 
+                    Button editButton = lectureCard.findViewById(R.id.edit_button);
+                    editButton.setVisibility(View.GONE);
                     Button deleteButton = lectureCard.findViewById(R.id.delete_button);
                     deleteButton.setVisibility(View.GONE);
                     SwitchCompat notification_incard = lectureCard.findViewById(R.id.notification_incard);

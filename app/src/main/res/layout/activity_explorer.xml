@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Software Engineering"
+            android:text="My Schedule"
             android:textSize="26sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
@@ -141,6 +141,7 @@
         android:layout_marginBottom="16dp"/>
 
     <FrameLayout
+        android:id="@+id/gesture_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -152,6 +153,7 @@
             android:background="@drawable/shadow_gradient" />
 
         <ScrollView
+            android:id="@+id/explorer_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,6 +39,8 @@ public class ExplorerActivity extends AppCompatActivity
 
     DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("h:mm a");
     DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
+    FrameLayout gesture_space;
+    android.widget.ScrollView explorerScrollView;
 
 
     @Override
@@ -58,6 +61,28 @@ public class ExplorerActivity extends AppCompatActivity
         nextButton = findViewById(R.id.btn_next);
         dayName = findViewById(R.id.explorer_day_name);
         addLectureButton = findViewById(R.id.Add_lecture_button);
+        gesture_space = findViewById(R.id.gesture_container);
+        explorerScrollView = findViewById(R.id.explorer_scroll_view);
+
+        Gestures gestureListener = new Gestures(this) {
+            @Override
+            public void onSwipeLeft()
+            {
+                // Swipe Left -> Next Day
+                nextDay();
+            }
+
+            @Override
+            public void onSwipeRight()
+            {
+                // Swipe Right -> Previous Day
+                prevDay();
+            }};
+
+        // Set listener on both the container and the scrollview to ensure swipes are caught
+        gesture_space.setOnTouchListener(gestureListener);
+        explorerScrollView.setOnTouchListener(gestureListener);
+
 
         Button LiveButton = findViewById(R.id.Live_button);
         LiveButton.setOnClickListener(v ->{
@@ -81,24 +106,41 @@ public class ExplorerActivity extends AppCompatActivity
         dateHeader.setText(LocalDate.now().format(dateFormater));
 
         if(prevButton != null)
-            prevButton.setOnClickListener(v -> {
-                if(index > 0) {
-                    index--;
-                    dayName.setText(days[index]);
-                    updateUI();
-                }
-            });
+            prevButton.setOnClickListener(v -> prevDay());
 
         if(nextButton != null)
-            nextButton.setOnClickListener(v -> {
-                if(index < days.length - 1) {
-                    index++;
-                    dayName.setText(days[index]);
-                    updateUI();
-                }
-            });
+            nextButton.setOnClickListener(v -> nextDay());
 
         updateUI();
+    }
+
+    public void nextDay()
+    {
+        if(index < days.length - 1) {
+            index++;
+            dayName.setText(days[index]);
+            updateUI();
+        }
+        else {
+            index = 0;
+            dayName.setText(days[index]);
+            updateUI();
+        }
+    }
+
+    public void prevDay()
+    {
+        if(index > 0)
+        {
+            index--;
+            dayName.setText(days[index]);
+            updateUI();
+        }
+        else {
+            index = days.length - 1;
+            dayName.setText(days[index]);
+            updateUI();
+        }
     }
 
     public void updateUI() {
