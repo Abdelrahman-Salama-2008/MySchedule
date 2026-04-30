@@ -92,13 +92,13 @@
             android:layout_marginEnd="8dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/deleteAll_button"
+            android:id="@+id/settings_button"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="55dp"
-            android:text="Delete All"
-            android:textColor="@color/danger_red"
+            android:text="⚙️ Settings"
+            android:textColor="@color/text_primary"
             android:textSize="14sp"
             android:textAllCaps="false"
             android:textStyle="bold"
@@ -106,7 +106,7 @@
             android:insetLeft="0dp"
             android:insetRight="0dp"
             android:paddingHorizontal="4dp"
-            app:strokeColor="@color/danger_red"
+            app:strokeColor="@color/border_grey"
             app:strokeWidth="2dp"
             app:cornerRadius="12dp"
             android:layout_marginStart="8dp"/>

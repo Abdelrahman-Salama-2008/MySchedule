@@ -2,7 +2,7 @@ package com.example.myschedule;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri; // Added for Links
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast; // Added for Link error handling
+import android.widget.Toast;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -121,6 +121,13 @@ public class ExplorerActivity extends AppCompatActivity
             finish();
         });
 
+        //settings button
+        Button settingsButton = findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ExplorerActivity.this, ImportExportActivity.class);
+            startActivity(intent);
+        });
+
         addLectureButton.setOnClickListener(v -> {
             Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
             intent.putExtra("SELECTED_DAY", days[index]);
@@ -193,28 +200,7 @@ public class ExplorerActivity extends AppCompatActivity
             }
         });
 
-        Button deleteAllButton = findViewById(R.id.deleteAll_button);
 
-        deleteAllButton.setOnClickListener(v ->{
-            AlertDialog.Builder deleteConfirmation = new AlertDialog.Builder(this);
-            deleteConfirmation.setTitle("Delete All Lectures?");
-            deleteConfirmation.setMessage("Are you sure you want to delete all lectures?, This action cannot be undone.");
-
-            deleteConfirmation.setPositiveButton("Yes", (dialog, which) -> {
-                NotificationScheduler scheduler = new NotificationScheduler(this);
-                for(Lecture lecture: lectures){
-                    scheduler.cancelSingleLecture(lecture);
-                }
-                RoomDB.getInstance(ExplorerActivity.this).mainDAO().deleteAll();
-                lectures.clear();
-                updateUI();
-            });
-
-            deleteConfirmation.setNegativeButton("No", (dialog, which) -> {
-                dialog.dismiss();
-            });
-            deleteConfirmation.show();
-        });
 
         for (Lecture lecture : lectures) {
 
