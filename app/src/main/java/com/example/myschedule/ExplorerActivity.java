@@ -2,6 +2,7 @@ package com.example.myschedule;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri; // Added for Links
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast; // Added for Link error handling
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -56,10 +58,8 @@ public class ExplorerActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
 
         SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
-        // The "false" below is the default value (Light Mode) for new users
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
 
-        // 2. APPLY THE THEME BEFORE DRAWING THE SCREEN
         if (isDarkMode) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
@@ -69,7 +69,7 @@ public class ExplorerActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
 
-        lectures = ScheduleData.getLectures(this);//lecture data
+        lectures = ScheduleData.getLectures(this);
         container = findViewById(R.id.lecture_container);
         prevButton = findViewById(R.id.btn_prev);
         nextButton = findViewById(R.id.btn_next);
@@ -80,27 +80,20 @@ public class ExplorerActivity extends AppCompatActivity
 
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
 
-        // Set the correct emoji based on the current mode
         if (isDarkMode) {
-            btnThemeToggle.setText("🌚"); // Shows Moon in Dark Mode
+            btnThemeToggle.setText("🌚");
         } else {
-            btnThemeToggle.setText("😎"); // Shows Sun/Cool face in Light Mode
+            btnThemeToggle.setText("😎");
         }
 
-        // 5. THE CLICK LISTENER TO SWITCH MODES
         btnThemeToggle.setOnClickListener(v -> {
-            // Read the current state again just to be safe
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
-
-            // Flip it! (If true, make false. If false, make true)
             boolean newMode = !currentMode;
 
-            // Save the new choice to Android SharedPreferences
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("isDarkMode", newMode);
-            editor.apply(); // apply() saves it instantly in the background
+            editor.apply();
 
-            // Apply the new theme (This will instantly refresh your Activity)
             if (newMode) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else {
@@ -111,23 +104,17 @@ public class ExplorerActivity extends AppCompatActivity
 
         Gestures gestureListener = new Gestures(this) {
             @Override
-            public void onSwipeLeft()
-            {
-                // Swipe Left -> Next Day
+            public void onSwipeLeft() {
                 nextDay();
             }
 
             @Override
-            public void onSwipeRight()
-            {
-                // Swipe Right -> Previous Day
+            public void onSwipeRight() {
                 prevDay();
             }};
 
-        // Set listener on both the container and the scrollview to ensure swipes are caught
         gesture_space.setOnTouchListener(gestureListener);
         explorerScrollView.setOnTouchListener(gestureListener);
-
 
         Button LiveButton = findViewById(R.id.Live_button);
         LiveButton.setOnClickListener(v ->{
@@ -139,7 +126,6 @@ public class ExplorerActivity extends AppCompatActivity
             intent.putExtra("SELECTED_DAY", days[index]);
             startActivity(intent);
         });
-
 
         for (int i = 0; i < days.length; i++) {
             if(days[i].equalsIgnoreCase(today.toString()))
@@ -159,8 +145,7 @@ public class ExplorerActivity extends AppCompatActivity
         updateUI();
     }
 
-    public void nextDay()
-    {
+    public void nextDay() {
         if(index < days.length - 1) {
             index++;
             dayName.setText(days[index]);
@@ -173,10 +158,8 @@ public class ExplorerActivity extends AppCompatActivity
         }
     }
 
-    public void prevDay()
-    {
-        if(index > 0)
-        {
+    public void prevDay() {
+        if(index > 0) {
             index--;
             dayName.setText(days[index]);
             updateUI();
@@ -197,21 +180,16 @@ public class ExplorerActivity extends AppCompatActivity
 
         LayoutInflater inflater = getLayoutInflater();
 
-        // Sort the list by time before showing the cards
         lectures.sort((lecture1, lecture2) -> {
-
             String time1 = lecture1.getStarttime();
             String time2 = lecture2.getStarttime();
 
             try {
-
                 LocalTime t1 = LocalTime.parse(time1, myFormat);
                 LocalTime t2 = LocalTime.parse(time2, myFormat);
-
-
                 return t1.compareTo(t2);
             } catch (Exception e) {
-                return 0; //return if there are any error
+                return 0;
             }
         });
 
@@ -240,24 +218,45 @@ public class ExplorerActivity extends AppCompatActivity
 
         for (Lecture lecture : lectures) {
 
-
-
             if (lecture.getDay().equalsIgnoreCase(days[index])) {
                 foundAny = true;
                 View lectureCard = inflater.inflate(R.layout.item_course, container, false);
                 View indicator = lectureCard.findViewById(R.id.type_indicator);
                 ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
 
-                if(lecture.getRoom().equalsIgnoreCase("Online"))
-                {
+                //link logic
+                TextView linkIcon = lectureCard.findViewById(R.id.lecture_link_icon);
+                String classLink = lecture.getLink();
+
+                if (classLink == null || classLink.isEmpty()) {
+                    linkIcon.setVisibility(View.GONE);
+                } else {
+                    linkIcon.setVisibility(View.VISIBLE);
+                    linkIcon.setOnClickListener(v -> {
+                        new AlertDialog.Builder(ExplorerActivity.this)
+                                .setTitle("External Link")
+                                .setMessage("Are you sure you want to exit the app to follow this link?")
+                                .setPositiveButton("Yes", (dialog, which) -> {
+                                    try {
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(classLink));
+                                        startActivity(intent);
+                                    } catch (Exception e) {
+                                        Toast.makeText(ExplorerActivity.this, "Could not open link", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .setNegativeButton("No", null)
+                                .show();
+                    });
+                }
+
+                if(lecture.getRoom().equalsIgnoreCase("Online")) {
                     indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
                     roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
-                }
-                else
-                {
+                } else {
                     indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
                     roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
                 }
+
                 TextView code = lectureCard.findViewById(R.id.lecture_code);
                 TextView name = lectureCard.findViewById(R.id.lecture_name);
                 TextView prof = lectureCard.findViewById(R.id.lecture_prof);
@@ -266,7 +265,7 @@ public class ExplorerActivity extends AppCompatActivity
                 TextView day = lectureCard.findViewById(R.id.lecture_day);
                 TextView time = lectureCard.findViewById(R.id.lecture_time);
                 TextView room = lectureCard.findViewById(R.id.lecture_room);
-                Button editButton = lectureCard.findViewById(R.id.edit_button); //added this line
+                Button editButton = lectureCard.findViewById(R.id.edit_button);
 
                 Button deleteButton = lectureCard.findViewById(R.id.delete_button);
                 deleteButton.setVisibility(View.VISIBLE);
@@ -316,23 +315,25 @@ public class ExplorerActivity extends AppCompatActivity
                 });
 
                 editButton.setOnClickListener(v -> {
-                            Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
-                            intent.putExtra("IS_EDIT_MODE", true);
-                            intent.putExtra("SELECTED_DAY", days[index]);
-                            intent.putExtra("LECTURE_ID", lecture.getId());
-                            intent.putExtra("LECTURE_CODE", lecture.getCode());
-                            intent.putExtra("LECTURE_NAME", lecture.getName());
-                            intent.putExtra("LECTURE_PROF", lecture.getProf());
-                            intent.putExtra("LECTURE_SECTION", lecture.getSection());
-                            intent.putExtra("LECTURE_CREDIT", lecture.getCredit());
-                            intent.putExtra("LECTURE_DAY", lecture.getDay());
-                            intent.putExtra("LECTURE_STARTTIME", lecture.getStarttime());
-                            intent.putExtra("LECTURE_ENDTIME", lecture.getEndtime());
-                            intent.putExtra("LECTURE_ROOM", lecture.getRoom());
-                            intent.putExtra("LECTURE_NOTIFICATION", lecture.getWantsNotification());
-                            intent.putExtra("LECTURE_REMINDER", lecture.getReminderMinutes());
-                            startActivity(intent);
-                        });
+                    Intent intent = new Intent(ExplorerActivity.this, AddLectureActivity.class);
+                    intent.putExtra("IS_EDIT_MODE", true);
+                    intent.putExtra("SELECTED_DAY", days[index]);
+                    intent.putExtra("LECTURE_ID", lecture.getId());
+                    intent.putExtra("LECTURE_CODE", lecture.getCode());
+                    intent.putExtra("LECTURE_NAME", lecture.getName());
+                    intent.putExtra("LECTURE_PROF", lecture.getProf());
+                    intent.putExtra("LECTURE_SECTION", lecture.getSection());
+                    intent.putExtra("LECTURE_CREDIT", lecture.getCredit());
+                    intent.putExtra("LECTURE_DAY", lecture.getDay());
+                    intent.putExtra("LECTURE_STARTTIME", lecture.getStarttime());
+                    intent.putExtra("LECTURE_ENDTIME", lecture.getEndtime());
+                    intent.putExtra("LECTURE_ROOM", lecture.getRoom());
+                    intent.putExtra("LECTURE_NOTIFICATION", lecture.getWantsNotification());
+                    intent.putExtra("LECTURE_REMINDER", lecture.getReminderMinutes());
+                    intent.putExtra("LECTURE_LINK", lecture.getLink());
+
+                    startActivity(intent);
+                });
 
                 container.addView(lectureCard);
             }

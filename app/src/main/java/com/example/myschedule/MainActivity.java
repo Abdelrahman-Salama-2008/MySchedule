@@ -1,18 +1,20 @@
 package com.example.myschedule;
 
+import android.app.AlertDialog; // Added
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.net.Uri; // Added
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -27,14 +29,12 @@ import java.time.format.DateTimeFormatter;
 import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     public ArrayList<Lecture> lectures = new ArrayList<>();
     Handler handler = new Handler();
-    Runnable runnable = new Runnable(){
+    Runnable runnable = new Runnable() {
         @Override
-        public void run()
-        {
+        public void run() {
             updateUI();
             handler.postDelayed(this, 60000);
         }
@@ -75,9 +75,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-
+    protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
 
@@ -95,28 +93,19 @@ public class MainActivity extends AppCompatActivity
 
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
 
-        // Set the correct emoji based on the current mode
         if (isDarkMode) {
-            btnThemeToggle.setText("🌚"); // Shows Moon in Dark Mode
+            btnThemeToggle.setText("🌚");
         } else {
-            btnThemeToggle.setText("😎"); // Shows Sun/Cool face in Light Mode
+            btnThemeToggle.setText("😎");
         }
 
-        // 5. THE CLICK LISTENER TO SWITCH MODES
-        btnThemeToggle.setOnClickListener(v ->
-        {
-            // Read the current state again just to be safe
+        btnThemeToggle.setOnClickListener(v -> {
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
-
-            // Flip it! (If true, make false. If false, make true)
             boolean newMode = !currentMode;
-
-            // Save the new choice to Android SharedPreferences
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("isDarkMode", newMode);
-            editor.apply(); // apply() saves it instantly in the background
+            editor.apply();
 
-            // Apply the new theme (This will instantly refresh your Activity)
             if (newMode) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else {
@@ -124,7 +113,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // Inside MainActivity.onCreate
         createNotificationChannel();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -132,23 +120,17 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-
         Button fullButton = findViewById(R.id.full_button);
-        fullButton.setOnClickListener(v ->{
+        fullButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ExplorerActivity.class);
             startActivity(intent);
         });
 
-
         lectures = ScheduleData.getLectures(this);
-
         new NotificationScheduler(this).scheduleAllLectures();
-
-
     }
 
-    public void updateUI()
-    {
+    public void updateUI() {
         boolean foundAny = false;
         container.removeAllViews();
         LocalTime currentTime = LocalTime.now();
@@ -160,27 +142,20 @@ public class MainActivity extends AppCompatActivity
         Duration timeLeft;
         int counter = 0;
         int todaylecturecounter = 0;
-        String todayname = today.toString();
-
 
         LayoutInflater inflater = getLayoutInflater();
 
-        // Sort the list by time before showing the cards
         lectures.sort((lecture1, lecture2) -> {
-            // 1. Get the clean strings
             String time1 = lecture1.getStarttime();
             String time2 = lecture2.getStarttime();
-
             try {
                 LocalTime t1 = LocalTime.parse(time1, myFormat);
                 LocalTime t2 = LocalTime.parse(time2, myFormat);
-
                 return t1.compareTo(t2);
             } catch (Exception e) {
-                return 0; // If there are any errors, return
+                return 0;
             }
         });
-
 
         for (Lecture lecture : lectures) {
             if (lecture.getDay().equalsIgnoreCase(today.toString())) {
@@ -190,33 +165,52 @@ public class MainActivity extends AppCompatActivity
                     foundAny = true;
                     counter++;
 
-                    CardView lectureCard =(CardView) inflater.inflate(R.layout.item_course, container, false);
+                    CardView lectureCard = (CardView) inflater.inflate(R.layout.item_course, container, false);
                     View indicator = lectureCard.findViewById(R.id.type_indicator);
                     ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
 
-                    if(lecture.getRoom().equalsIgnoreCase("Online"))
-                    {
+                    //link logic
+                    TextView linkIcon = lectureCard.findViewById(R.id.lecture_link_icon);
+                    String classLink = lecture.getLink();
+
+                    if (classLink == null || classLink.isEmpty()) {
+                        linkIcon.setVisibility(View.GONE);
+                    } else {
+                        linkIcon.setVisibility(View.VISIBLE);
+                        linkIcon.setOnClickListener(v -> {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("External Link")
+                                    .setMessage("Are you sure you want to exit the app to follow this link?")
+                                    .setPositiveButton("Yes", (dialog, which) -> {
+                                        try {
+                                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(classLink));
+                                            startActivity(intent);
+                                        } catch (Exception e) {
+                                            Toast.makeText(MainActivity.this, "Could not open link", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .setNegativeButton("No", null)
+                                    .show();
+                        });
+                    }
+
+                    if (lecture.getRoom().equalsIgnoreCase("Online")) {
                         indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
                         roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
-                    }
-                    else
-                    {
+                    } else {
                         indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
                         roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
                     }
-                    if(TimeConverters.convertTime(lecture.getStarttime()).isBefore(LocalTime.now()) && TimeConverters.convertTime(lecture.getEndtime()).isAfter(LocalTime.now()))//current lecture
-                    {
+
+                    if (TimeConverters.convertTime(lecture.getStarttime()).isBefore(LocalTime.now()) && TimeConverters.convertTime(lecture.getEndtime()).isAfter(LocalTime.now())) {
                         lectureCard.setCardBackgroundColor(getResources().getColor(R.color.live));
-                        if(counter == 1) {
+                        if (counter == 1) {
                             timeLeft = Duration.between(LocalTime.now(), TimeConverters.convertTime(lecture.getEndtime()));
-                            //time till lecture end
                             timeLeftText.setText("Lecture ends in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
                         }
-                    }
-                    else {
-                        if(counter == 1)
-                        {
-                            timeLeft = Duration.between(currentTime, TimeConverters.convertTime(lecture.getStarttime()));//time till next lecture
+                    } else {
+                        if (counter == 1) {
+                            timeLeft = Duration.between(currentTime, TimeConverters.convertTime(lecture.getStarttime()));
                             timeLeftText.setText("Next Lecture in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
                         }
                     }
@@ -230,13 +224,9 @@ public class MainActivity extends AppCompatActivity
                     TextView time = lectureCard.findViewById(R.id.lecture_time);
                     TextView room = lectureCard.findViewById(R.id.lecture_room);
 
-                    Button editButton = lectureCard.findViewById(R.id.edit_button);
-                    editButton.setVisibility(View.GONE);
-                    Button deleteButton = lectureCard.findViewById(R.id.delete_button);
-                    deleteButton.setVisibility(View.GONE);
-                    SwitchCompat notification_incard = lectureCard.findViewById(R.id.notification_incard);
-                    notification_incard.setVisibility(View.GONE);
-
+                    lectureCard.findViewById(R.id.edit_button).setVisibility(View.GONE);
+                    lectureCard.findViewById(R.id.delete_button).setVisibility(View.GONE);
+                    lectureCard.findViewById(R.id.notification_incard).setVisibility(View.GONE);
 
                     code.setText("Code: " + lecture.getCode());
                     name.setText("Course: " + lecture.getName());
@@ -248,26 +238,23 @@ public class MainActivity extends AppCompatActivity
                     room.setText(lecture.getRoom());
 
                     container.addView(lectureCard);
-
                 }
             }
         }
-        if(todaylecturecounter == 0)
-        {
+
+        if (todaylecturecounter == 0) {
             timeLeftText.setText("No Lectures Today");
             emptyMessage.setText("No Lectures Today");
-        }
-        else{
+        } else {
             emptyMessage.setText("Day Finished 🎉");
-            if(!foundAny)
-            {
+            if (!foundAny) {
                 timeLeftText.setText("Day Finished 🎉");
             }
         }
 
         if (!foundAny) {
             emptyMessage.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             emptyMessage.setVisibility(View.GONE);
         }
     }

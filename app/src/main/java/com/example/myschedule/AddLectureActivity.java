@@ -31,11 +31,11 @@ public class AddLectureActivity extends AppCompatActivity {
     LocalTime savetime;
     static List<Lecture> lectures;
     static RoomDB database;
-    EditText code, name, prof, section, credit, room;
+    EditText code, name, prof, section, credit, room, link;
     SwitchCompat onlineSwitch, notification;
     Button addButton, cancelButton;
     String startTime, endTime;
-    String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day;
+    String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day, linktext;
     boolean onlineText, notificationText;
     Spinner daySpinner, reminderSpinner;
     LinearLayout reminderContainer;
@@ -71,6 +71,7 @@ public class AddLectureActivity extends AppCompatActivity {
         room = findViewById(R.id.Room_number);
         daySpinner = findViewById(R.id.day_spinner);
         reminderContainer = findViewById(R.id.reminder_container);
+        link = findViewById(R.id.Course_Link);
 
         onlineText = onlineSwitch.isChecked();
 
@@ -102,6 +103,7 @@ public class AddLectureActivity extends AppCompatActivity {
             prof.setText(getIntent().getStringExtra("LECTURE_PROF"));
             section.setText(getIntent().getStringExtra("LECTURE_SECTION"));
             credit.setText(getIntent().getStringExtra("LECTURE_CREDIT"));
+            link.setText(getIntent().getStringExtra("LECTURE_LINK"));
 
             if(getIntent().getStringExtra("LECTURE_ROOM").equalsIgnoreCase("Online")) {
                 onlineSwitch.setChecked(true);
@@ -169,6 +171,16 @@ public class AddLectureActivity extends AppCompatActivity {
                 day = daySpinner.getSelectedItem().toString();
                 starttimesaved = startTime;
                 endtimesaved = endTime;
+                linktext = link.getText().toString();
+
+                if(linktext.isEmpty())
+                {
+                    linktext = "";
+                }
+                else{
+                    if(!linktext.startsWith("http://") && !linktext.startsWith("https://"))
+                        linktext = "https://" + linktext;
+                }
 
                 // Grab the selected reminder time
                 int selectedReminderMinutes = reminderValues[reminderSpinner.getSelectedItemPosition()];
@@ -181,13 +193,12 @@ public class AddLectureActivity extends AppCompatActivity {
                 if(isValid()) {
                     if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
                         // Pass selectedReminderMinutes to the constructor
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes, linktext);
                         int passedId = getIntent().getIntExtra("LECTURE_ID", -1);
                         lecture.setId(passedId);
                         database.mainDAO().update(lecture);
                     } else {
-                        // Pass selectedReminderMinutes to the constructor
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes,linktext);
                         database.mainDAO().insert(lecture);
                     }
                     finish();
