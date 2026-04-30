@@ -22,7 +22,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:layout_centerInParent="true"
-            android:paddingHorizontal="48dp">
+            android:paddingHorizontal="24dp">
 
             <TextView
                 android:layout_width="wrap_content"

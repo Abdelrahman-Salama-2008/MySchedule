@@ -23,7 +23,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:layout_centerInParent="true"
-            android:paddingHorizontal="48dp"
+            android:paddingHorizontal="24dp"
             android:clipChildren="false"
             android:clipToPadding="false">
 
@@ -47,7 +47,9 @@
                 android:layout_marginTop="4dp"
                 android:paddingBottom="8dp"
                 android:textAllCaps="true"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:maxLines="1"
+                android:ellipsize="end"/>
         </LinearLayout>
 
         <TextView
@@ -192,7 +194,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="16dp"
-                android:paddingTop="8dp">
+                android:paddingTop="8dp"
+                android:animateLayoutChanges="true">
             </LinearLayout>
         </ScrollView>
 

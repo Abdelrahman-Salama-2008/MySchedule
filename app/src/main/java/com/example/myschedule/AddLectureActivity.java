@@ -42,9 +42,45 @@ public class AddLectureActivity extends AppCompatActivity {
 
 
     @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        android.content.SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
+
+        if (isDarkMode) {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+
+        // --- THEME TRANSITION LOGIC ---
+        if (MainActivity.screenshot != null) {
+            final android.widget.ImageView overlay = new android.widget.ImageView(this);
+            overlay.setImageBitmap(MainActivity.screenshot);
+            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            root.addView(overlay);
+            MainActivity.screenshot = null;
+            overlay.animate()
+                    .alpha(0f)
+                    .setDuration(800)
+                    .setListener(new android.animation.AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(android.animation.Animator animation) {
+                            root.removeView(overlay);
+                        }
+                    });
+        }
+
+        androidx.activity.EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_lecture);
 
         //database

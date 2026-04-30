@@ -1,10 +1,10 @@
 package com.example.myschedule;
 
-import android.app.AlertDialog; // Added
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
-import android.net.Uri; // Added
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout container;
     DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("h:mm a");
     DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
+    public static android.graphics.Bitmap screenshot = null;
     TextView emptyMessage;
     TextView dateHeader;
 
@@ -58,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
         lectures = ScheduleData.getLectures(this);
         updateUI();
         handler.post(runnable);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
     }
 
     private void createNotificationChannel() {
@@ -86,7 +93,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+
         setContentView(R.layout.activity_main);
+
+        // --- THEME TRANSITION LOGIC ---
+        if (screenshot != null) {
+            final ImageView overlay = new ImageView(this);
+            overlay.setImageBitmap(screenshot);
+            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            root.addView(overlay);
+            screenshot = null;
+            overlay.animate()
+                    .alpha(0f)
+                    .setDuration(800)
+                    .setListener(new android.animation.AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(android.animation.Animator animation) {
+                            root.removeView(overlay);
+                        }
+                    });
+        }
+
         container = findViewById(R.id.lecture_container);
         emptyMessage = findViewById(R.id.empty);
         dateHeader = findViewById(R.id.dateHeader);
@@ -100,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         btnThemeToggle.setOnClickListener(v -> {
+            // 1. Capture the current screen
+            View rootView = getWindow().getDecorView().getRootView();
+            rootView.setDrawingCacheEnabled(true);
+            screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
+            rootView.setDrawingCacheEnabled(false);
+
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -169,7 +204,6 @@ public class MainActivity extends AppCompatActivity {
                     View indicator = lectureCard.findViewById(R.id.type_indicator);
                     ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
 
-                    //link logic
                     TextView linkIcon = lectureCard.findViewById(R.id.lecture_link_icon);
                     String classLink = lecture.getLink();
 

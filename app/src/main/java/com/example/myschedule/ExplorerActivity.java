@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -27,8 +29,7 @@ import com.example.myschedule.database.RoomDB;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class ExplorerActivity extends AppCompatActivity
-{
+public class ExplorerActivity extends AppCompatActivity {
     ArrayList<Lecture> lectures = new ArrayList<>();
     LinearLayout container;
     TextView dateHeader;
@@ -55,8 +56,13 @@ public class ExplorerActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
 
@@ -67,7 +73,28 @@ public class ExplorerActivity extends AppCompatActivity
         }
 
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+
         setContentView(R.layout.activity_explorer);
+
+        // --- THEME TRANSITION LOGIC ---
+        if (MainActivity.screenshot != null) {
+            final ImageView overlay = new ImageView(this);
+            overlay.setImageBitmap(MainActivity.screenshot);
+            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            root.addView(overlay);
+            MainActivity.screenshot = null;
+            overlay.animate()
+                    .alpha(0f)
+                    .setDuration(800)
+                    .setListener(new android.animation.AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(android.animation.Animator animation) {
+                            root.removeView(overlay);
+                        }
+                    });
+        }
 
         lectures = ScheduleData.getLectures(this);
         container = findViewById(R.id.lecture_container);
@@ -87,6 +114,12 @@ public class ExplorerActivity extends AppCompatActivity
         }
 
         btnThemeToggle.setOnClickListener(v -> {
+            // 1. Capture the current screen
+            View rootView = getWindow().getDecorView().getRootView();
+            rootView.setDrawingCacheEnabled(true);
+            MainActivity.screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
+            rootView.setDrawingCacheEnabled(false);
+
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
 
@@ -121,7 +154,6 @@ public class ExplorerActivity extends AppCompatActivity
             finish();
         });
 
-        //settings button
         Button settingsButton = findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
             Intent intent = new Intent(ExplorerActivity.this, ImportExportActivity.class);
@@ -153,29 +185,59 @@ public class ExplorerActivity extends AppCompatActivity
     }
 
     public void nextDay() {
-        if(index < days.length - 1) {
-            index++;
-            dayName.setText(days[index]);
-            updateUI();
-        }
-        else {
-            index = 0;
-            dayName.setText(days[index]);
-            updateUI();
-        }
+        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_left);
+
+        slideOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(index < days.length - 1) index++; else index = 0;
+                dayName.setText(days[index]);
+                updateUI();
+
+                Animation slideIn = AnimationUtils.loadAnimation(ExplorerActivity.this, R.anim.slide_in_right);
+
+                // Both move together
+                explorerScrollView.startAnimation(slideIn);
+                dayName.startAnimation(slideIn);
+            }
+        });
+
+        // Both move out together
+        explorerScrollView.startAnimation(slideOut);
+        dayName.startAnimation(slideOut);
     }
 
     public void prevDay() {
-        if(index > 0) {
-            index--;
-            dayName.setText(days[index]);
-            updateUI();
-        }
-        else {
-            index = days.length - 1;
-            dayName.setText(days[index]);
-            updateUI();
-        }
+        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
+
+        slideOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(index > 0) index--; else index = days.length - 1;
+                dayName.setText(days[index]);
+                updateUI();
+
+                Animation slideIn = AnimationUtils.loadAnimation(ExplorerActivity.this, R.anim.slide_in_left);
+
+                // Both move together
+                explorerScrollView.startAnimation(slideIn);
+                dayName.startAnimation(slideIn);
+            }
+        });
+
+        // Both move out together
+        explorerScrollView.startAnimation(slideOut);
+        dayName.startAnimation(slideOut);
     }
 
     public void updateUI() {
@@ -199,8 +261,6 @@ public class ExplorerActivity extends AppCompatActivity
                 return 0;
             }
         });
-
-
 
         for (Lecture lecture : lectures) {
 

@@ -5,7 +5,9 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,13 +37,20 @@ public class ImportExportActivity extends AppCompatActivity {
             "2. TRANSLATE TO ENGLISH: Translate ALL extracted data (course names, professors, etc.) into English. The final JSON output MUST be entirely in English. " +
             "3. DAYS: Ensure days are fully spelled out and uppercase in English (e.g., 'SUNDAY', 'MONDAY'). " +
             "4. MISSING DATA: If any data is missing (such as credit, prof, section, or link), DO NOT use null. You MUST include the key and set its value to an empty string \"\". " +
-            "5. ONLINE CLASSES: If a class is online, set the room strictly to 'Online'. " +
+            "5. ONLINE CLASSES: If a class is online (عن بعد), set the room strictly to 'Online'. " +
             "6. MULTI-DAY CLASSES: If a course occurs on multiple days, you MUST create a completely separate JSON object for EACH day. " +
             "7. UNIVERSAL TIME RULE: The 'starttime' and 'endtime' MUST be in 'h:mm a' format (e.g., '2:00 PM', '10:30 AM'). " +
             "-> IF the provided schedule uses period numbers (e.g., 1, 2) instead of exact times, look at the prompt to see if I provided a time-mapping table. " +
             "-> IF I did NOT provide a time mapping, DO NOT GENERATE THE JSON YET. Reply ONLY with: 'Your schedule uses periods. Please reply with your university's time table (e.g., Period 1 = 8:00 AM to 8:50 AM) so I can generate accurate times.' " +
             "-> IF I refuse to provide the times or ask you to guess, make a smart logical guess (e.g., assuming Period 1 starts at 8:00 AM) and generate the JSON. " +
+            "8. CREDIT HOURS: Look for a number followed by or preceded by the Arabic letter 'س' (e.g., 'س3' or '4س') in the course details. This represents the 'credit' hours. Extract ONLY the number as a string (e.g., '3' or '4'). " +
             "Here is my schedule data: \n\n[PASTE YOUR SCHEDULE/IMAGE TEXT HERE]";
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +65,28 @@ public class ImportExportActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
+
         setContentView(R.layout.activity_import_export);
+
+        // --- THEME TRANSITION LOGIC ---
+        if (MainActivity.screenshot != null) {
+            final ImageView overlay = new ImageView(this);
+            overlay.setImageBitmap(MainActivity.screenshot);
+            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            root.addView(overlay);
+            MainActivity.screenshot = null;
+            overlay.animate()
+                    .alpha(0f)
+                    .setDuration(800)
+                    .setListener(new android.animation.AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(android.animation.Animator animation) {
+                            root.removeView(overlay);
+                        }
+                    });
+        }
 
         // 2. Initialize Views
         jsonInput = findViewById(R.id.et_json_input);
@@ -74,6 +104,12 @@ public class ImportExportActivity extends AppCompatActivity {
         }
 
         btnThemeToggle.setOnClickListener(v -> {
+            // 1. Capture the current screen
+            View rootView = getWindow().getDecorView().getRootView();
+            rootView.setDrawingCacheEnabled(true);
+            MainActivity.screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
+            rootView.setDrawingCacheEnabled(false);
+
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
 
