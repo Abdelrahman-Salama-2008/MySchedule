@@ -1,6 +1,7 @@
 package com.example.myschedule;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.example.myschedule.database.RoomDB;
@@ -52,6 +54,18 @@ public class ExplorerActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        // The "false" below is the default value (Light Mode) for new users
+        boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
+
+        // 2. APPLY THE THEME BEFORE DRAWING THE SCREEN
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
 
@@ -63,6 +77,37 @@ public class ExplorerActivity extends AppCompatActivity
         addLectureButton = findViewById(R.id.Add_lecture_button);
         gesture_space = findViewById(R.id.gesture_container);
         explorerScrollView = findViewById(R.id.explorer_scroll_view);
+
+        TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
+
+        // Set the correct emoji based on the current mode
+        if (isDarkMode) {
+            btnThemeToggle.setText("🌚"); // Shows Moon in Dark Mode
+        } else {
+            btnThemeToggle.setText("😎"); // Shows Sun/Cool face in Light Mode
+        }
+
+        // 5. THE CLICK LISTENER TO SWITCH MODES
+        btnThemeToggle.setOnClickListener(v -> {
+            // Read the current state again just to be safe
+            boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
+
+            // Flip it! (If true, make false. If false, make true)
+            boolean newMode = !currentMode;
+
+            // Save the new choice to Android SharedPreferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isDarkMode", newMode);
+            editor.apply(); // apply() saves it instantly in the background
+
+            // Apply the new theme (This will instantly refresh your Activity)
+            if (newMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+        });
+
 
         Gestures gestureListener = new Gestures(this) {
             @Override

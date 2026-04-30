@@ -9,33 +9,60 @@
     android:orientation="vertical"
     android:paddingTop="32dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:paddingBottom="16dp">
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:paddingHorizontal="48dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Schedule"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:letterSpacing="-0.02"/>
+
+            <TextView
+                android:id="@+id/dateHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DAY"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="4dp"
+                android:paddingBottom="8dp"
+                android:textAllCaps="true"
+                android:gravity="center"/>
+        </LinearLayout>
 
         <TextView
+            android:id="@+id/btn_theme_toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="My Schedule"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:letterSpacing="-0.02"/>
-
-        <TextView
-            android:id="@+id/dateHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="DAY"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="4dp"
-            android:textAllCaps="true"/>
-    </LinearLayout>
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="😎"
+            android:textSize="28sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -176,7 +203,7 @@
             android:layout_gravity="center"
             android:textStyle="bold"
             android:visibility="gone"
-            android:text="No Lectures Scheduled"
+            android:text="No lectures scheduled for today.\n Press + to add a new lecture."
             android:textSize="18sp"
             android:textColor="@color/text_secondary"/>
 

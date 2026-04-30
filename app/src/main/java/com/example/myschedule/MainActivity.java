@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.time.LocalTime;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import android.content.SharedPreferences;
+import androidx.appcompat.app.AppCompatDelegate;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -75,11 +77,52 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
+
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         container = findViewById(R.id.lecture_container);
         emptyMessage = findViewById(R.id.empty);
         dateHeader = findViewById(R.id.dateHeader);
+
+        TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
+
+        // Set the correct emoji based on the current mode
+        if (isDarkMode) {
+            btnThemeToggle.setText("🌚"); // Shows Moon in Dark Mode
+        } else {
+            btnThemeToggle.setText("😎"); // Shows Sun/Cool face in Light Mode
+        }
+
+        // 5. THE CLICK LISTENER TO SWITCH MODES
+        btnThemeToggle.setOnClickListener(v ->
+        {
+            // Read the current state again just to be safe
+            boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
+
+            // Flip it! (If true, make false. If false, make true)
+            boolean newMode = !currentMode;
+
+            // Save the new choice to Android SharedPreferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isDarkMode", newMode);
+            editor.apply(); // apply() saves it instantly in the background
+
+            // Apply the new theme (This will instantly refresh your Activity)
+            if (newMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+        });
 
         // Inside MainActivity.onCreate
         createNotificationChannel();
