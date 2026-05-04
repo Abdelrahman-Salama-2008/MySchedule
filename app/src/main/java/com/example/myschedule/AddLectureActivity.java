@@ -68,14 +68,16 @@ public class AddLectureActivity extends AppCompatActivity {
             overlay.setImageBitmap(MainActivity.screenshot);
             android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
             root.addView(overlay);
-            MainActivity.screenshot = null;
+
+            // Fast transition and robust clearing
             overlay.animate()
                     .alpha(0f)
-                    .setDuration(800)
+                    .setDuration(400)
                     .setListener(new android.animation.AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(android.animation.Animator animation) {
                             root.removeView(overlay);
+                            MainActivity.screenshot = null;
                         }
                     });
         }

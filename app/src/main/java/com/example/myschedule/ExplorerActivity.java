@@ -2,16 +2,20 @@ package com.example.myschedule;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,11 +36,8 @@ import java.time.format.DateTimeFormatter;
 public class ExplorerActivity extends AppCompatActivity {
     ArrayList<Lecture> lectures = new ArrayList<>();
     LinearLayout container;
-    TextView dateHeader;
-    Button prevButton;
-    Button nextButton;
-    Button addLectureButton;
-    TextView dayName;
+    TextView dateHeader, dayName;
+    Button prevButton, nextButton, addLectureButton;
 
     public String days[] = new String[]{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
     public int index;
@@ -45,7 +46,8 @@ public class ExplorerActivity extends AppCompatActivity {
     DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("h:mm a");
     DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
     FrameLayout gesture_space;
-    android.widget.ScrollView explorerScrollView;
+    ScrollView explorerScrollView;
+    private boolean isAnimating = false;
 
 
     @Override
@@ -63,8 +65,11 @@ public class ExplorerActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
+        int savedDay = sharedPreferences.getInt("savedDay", 0);
 
         if (isDarkMode) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -72,26 +77,36 @@ public class ExplorerActivity extends AppCompatActivity {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
 
-        super.onCreate(savedInstanceState);
+        if (getIntent().getBooleanExtra("isFromMain", false) && savedInstanceState == null) {
+            for (int i = 0; i < days.length; i++) {
+                if (days[i].equalsIgnoreCase(today.toString())) {
+                    index = i;
+                    break;
+                }
+            }
+        } else {
+            index = savedDay;
+        }
 
         overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
-
         setContentView(R.layout.activity_explorer);
 
-        // --- THEME TRANSITION LOGIC ---
+        //theme logic
         if (MainActivity.screenshot != null) {
             final ImageView overlay = new ImageView(this);
             overlay.setImageBitmap(MainActivity.screenshot);
-            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            ViewGroup root = (ViewGroup) getWindow().getDecorView();
             root.addView(overlay);
-            MainActivity.screenshot = null;
+
+            //wait for fade animation
             overlay.animate()
                     .alpha(0f)
-                    .setDuration(800)
+                    .setDuration(400)
                     .setListener(new android.animation.AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(android.animation.Animator animation) {
                             root.removeView(overlay);
+                            MainActivity.screenshot = null;
                         }
                     });
         }
@@ -105,6 +120,8 @@ public class ExplorerActivity extends AppCompatActivity {
         gesture_space = findViewById(R.id.gesture_container);
         explorerScrollView = findViewById(R.id.explorer_scroll_view);
 
+        dayName.setText(days[index]); //set day name
+
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
 
         if (isDarkMode) {
@@ -114,17 +131,23 @@ public class ExplorerActivity extends AppCompatActivity {
         }
 
         btnThemeToggle.setOnClickListener(v -> {
-            // 1. Capture the current screen
-            View rootView = getWindow().getDecorView().getRootView();
-            rootView.setDrawingCacheEnabled(true);
-            MainActivity.screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
-            rootView.setDrawingCacheEnabled(false);
+
+            try {
+                View view = getWindow().getDecorView();
+                Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                view.draw(canvas);
+                MainActivity.screenshot = bitmap;
+            } catch (Exception e) {
+                MainActivity.screenshot = null;
+            }
 
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("isDarkMode", newMode);
+            editor.putInt("savedDay", index);
             editor.apply();
 
             if (newMode) {
@@ -166,11 +189,7 @@ public class ExplorerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        for (int i = 0; i < days.length; i++) {
-            if(days[i].equalsIgnoreCase(today.toString()))
-                index = i;
-        }
-        dayName.setText(days[index]);
+        //moved from here
 
         dateHeader = findViewById(R.id.dateHeader);
         dateHeader.setText(LocalDate.now().format(dateFormater));
@@ -185,8 +204,12 @@ public class ExplorerActivity extends AppCompatActivity {
     }
 
     public void nextDay() {
-        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_left);
+        if (isAnimating)
+            return;
+        isAnimating = true;
 
+        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_left);
+        // avoid double trigger
         slideOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {}
@@ -195,26 +218,40 @@ public class ExplorerActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if(index < days.length - 1) index++; else index = 0;
+                if(index < days.length - 1)
+                    index++;
+                else
+                    index = 0;
                 dayName.setText(days[index]);
                 updateUI();
 
                 Animation slideIn = AnimationUtils.loadAnimation(ExplorerActivity.this, R.anim.slide_in_right);
+                slideIn.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        isAnimating = false;
+                    }
+                });
 
-                // Both move together
                 explorerScrollView.startAnimation(slideIn);
                 dayName.startAnimation(slideIn);
             }
         });
 
-        // Both move out together
         explorerScrollView.startAnimation(slideOut);
-        dayName.startAnimation(slideOut);
+        dayName.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
     }
 
     public void prevDay() {
-        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
+        if (isAnimating) return;
+        isAnimating = true;
 
+        Animation slideOut = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
+        // avoid double trigger
         slideOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {}
@@ -228,16 +265,24 @@ public class ExplorerActivity extends AppCompatActivity {
                 updateUI();
 
                 Animation slideIn = AnimationUtils.loadAnimation(ExplorerActivity.this, R.anim.slide_in_left);
+                slideIn.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        isAnimating = false;
+                    }
+                });
 
-                // Both move together
                 explorerScrollView.startAnimation(slideIn);
                 dayName.startAnimation(slideIn);
             }
         });
 
-        // Both move out together
         explorerScrollView.startAnimation(slideOut);
-        dayName.startAnimation(slideOut);
+        dayName.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
     }
 
     public void updateUI() {
@@ -248,7 +293,7 @@ public class ExplorerActivity extends AppCompatActivity {
         dateHeader.setText(LocalDate.now().format(dateFormater));
 
         LayoutInflater inflater = getLayoutInflater();
-
+        //sort arraylist based on time
         lectures.sort((lecture1, lecture2) -> {
             String time1 = lecture1.getStarttime();
             String time2 = lecture2.getStarttime();

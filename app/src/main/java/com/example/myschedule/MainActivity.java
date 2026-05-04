@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
 
 import java.time.DayOfWeek;
@@ -41,9 +42,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
     LinearLayout container;
-    DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("h:mm a");
     DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("EEEE, MMM dd");
-    public static android.graphics.Bitmap screenshot = null;
+    public static Bitmap screenshot = null;
     TextView emptyMessage;
     TextView dateHeader;
 
@@ -98,20 +98,21 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // --- THEME TRANSITION LOGIC ---
+        //transition theme
         if (screenshot != null) {
             final ImageView overlay = new ImageView(this);
             overlay.setImageBitmap(screenshot);
             android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
             root.addView(overlay);
-            screenshot = null;
+
             overlay.animate()
                     .alpha(0f)
-                    .setDuration(800)
+                    .setDuration(400)
                     .setListener(new android.animation.AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(android.animation.Animator animation) {
                             root.removeView(overlay);
+                            screenshot = null;
                         }
                     });
         }
@@ -129,11 +130,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         btnThemeToggle.setOnClickListener(v -> {
-            // 1. Capture the current screen
-            View rootView = getWindow().getDecorView().getRootView();
-            rootView.setDrawingCacheEnabled(true);
-            screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
-            rootView.setDrawingCacheEnabled(false);
+            try {
+                View view = getWindow().getDecorView();
+                Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                view.draw(canvas);
+                screenshot = bitmap;
+            } catch (Exception e) {
+                screenshot = null;
+            }
 
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
@@ -157,7 +162,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button fullButton = findViewById(R.id.full_button);
         fullButton.setOnClickListener(v -> {
+
             Intent intent = new Intent(MainActivity.this, ExplorerActivity.class);
+            intent.putExtra("isFromMain", true);
             startActivity(intent);
         });
 
@@ -184,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
             String time1 = lecture1.getStarttime();
             String time2 = lecture2.getStarttime();
             try {
-                LocalTime t1 = LocalTime.parse(time1, myFormat);
-                LocalTime t2 = LocalTime.parse(time2, myFormat);
+                LocalTime t1 = TimeConverters.convertTime(time1);
+                LocalTime t2 = TimeConverters.convertTime(time2);
                 return t1.compareTo(t2);
             } catch (Exception e) {
                 return 0;
@@ -193,17 +200,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         for (Lecture lecture : lectures) {
-            if (lecture.getDay().equalsIgnoreCase(today.toString())) {
+            if (lecture.getDay().equalsIgnoreCase(today.toString())) { //today's lectures
                 todaylecturecounter++;
 
-                if (TimeConverters.convertTime(lecture.getEndtime()).isAfter(currentTime)) {
+                if (TimeConverters.convertTime(lecture.getEndtime()).isAfter(currentTime)) { //future lectures
                     foundAny = true;
                     counter++;
 
                     CardView lectureCard = (CardView) inflater.inflate(R.layout.item_course, container, false);
                     View indicator = lectureCard.findViewById(R.id.type_indicator);
                     ImageView roomIcon = lectureCard.findViewById(R.id.room_icon);
-
+                    //link logic
                     TextView linkIcon = lectureCard.findViewById(R.id.lecture_link_icon);
                     String classLink = lecture.getLink();
 
@@ -228,15 +235,15 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
 
-                    if (lecture.getRoom().equalsIgnoreCase("Online")) {
+                    if (lecture.getRoom().equalsIgnoreCase("Online")) { //online style card
                         indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
                         roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
-                    } else {
+                    } else { //attend style card
                         indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
                         roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
                     }
 
-                    if (TimeConverters.convertTime(lecture.getStarttime()).isBefore(LocalTime.now()) && TimeConverters.convertTime(lecture.getEndtime()).isAfter(LocalTime.now())) {
+                    if (TimeConverters.convertTime(lecture.getStarttime()).isBefore(LocalTime.now()) && TimeConverters.convertTime(lecture.getEndtime()).isAfter(LocalTime.now())) {//current lecture
                         lectureCard.setCardBackgroundColor(getResources().getColor(R.color.live));
                         if (counter == 1) {
                             timeLeft = Duration.between(LocalTime.now(), TimeConverters.convertTime(lecture.getEndtime()));

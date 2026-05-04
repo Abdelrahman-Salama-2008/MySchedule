@@ -10,7 +10,6 @@ public class Gestures implements View.OnTouchListener
 
     private final GestureDetector gestureDetector;
 
-    // 1. Constructor that takes a Context (so we can pass it to the detector)
     public Gestures(Context context) {
         gestureDetector = new GestureDetector(context, new GesturesListener());
     }

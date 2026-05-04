@@ -80,6 +80,7 @@ public class NotificationScheduler {
         int id = lecture.getId();
         Intent intent = new Intent(context, NotificationReceiver.class);
         intent.putExtra("lecture_name", lecture.getName());
+        intent.putExtra("minutes_before", lecture.getReminderMinutes());
 
         return PendingIntent.getBroadcast(
                 context,

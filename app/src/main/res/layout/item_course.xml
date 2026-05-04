@@ -134,8 +134,10 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Day"
-                    android:textColor="#4B5563"
-                    android:textSize="14sp" />
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

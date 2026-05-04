@@ -54,7 +54,6 @@ public class ImportExportActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // 1. Theme Setup
         SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
 
@@ -70,25 +69,24 @@ public class ImportExportActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_import_export);
 
-        // --- THEME TRANSITION LOGIC ---
         if (MainActivity.screenshot != null) {
             final ImageView overlay = new ImageView(this);
             overlay.setImageBitmap(MainActivity.screenshot);
             android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
             root.addView(overlay);
-            MainActivity.screenshot = null;
+
             overlay.animate()
                     .alpha(0f)
-                    .setDuration(800)
+                    .setDuration(400)
                     .setListener(new android.animation.AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(android.animation.Animator animation) {
                             root.removeView(overlay);
+                            MainActivity.screenshot = null;
                         }
                     });
         }
 
-        // 2. Initialize Views
         jsonInput = findViewById(R.id.et_json_input);
         MaterialButton btnCopyPrompt = findViewById(R.id.btn_copy_prompt);
         MaterialButton btnImport = findViewById(R.id.btn_import_schedule);
@@ -96,7 +94,6 @@ public class ImportExportActivity extends AppCompatActivity {
         MaterialButton btnDeleteAll = findViewById(R.id.btn_delete_all);
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
 
-        // 3. Theme Toggle UI update & Listener
         if (isDarkMode) {
             btnThemeToggle.setText("🌚");
         } else {
@@ -104,11 +101,15 @@ public class ImportExportActivity extends AppCompatActivity {
         }
 
         btnThemeToggle.setOnClickListener(v -> {
-            // 1. Capture the current screen
-            View rootView = getWindow().getDecorView().getRootView();
-            rootView.setDrawingCacheEnabled(true);
-            MainActivity.screenshot = android.graphics.Bitmap.createBitmap(rootView.getDrawingCache());
-            rootView.setDrawingCacheEnabled(false);
+            try {
+                View view = getWindow().getDecorView();
+                android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(view.getWidth(), view.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+                android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+                view.draw(canvas);
+                MainActivity.screenshot = bitmap;
+            } catch (Exception e) {
+                MainActivity.screenshot = null;
+            }
 
             boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
             boolean newMode = !currentMode;
@@ -124,7 +125,6 @@ public class ImportExportActivity extends AppCompatActivity {
             }
         });
 
-        // 4. Button Listeners
         btnCopyPrompt.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("AI Prompt", AI_PROMPT);
@@ -136,20 +136,19 @@ public class ImportExportActivity extends AppCompatActivity {
 
         btnExport.setOnClickListener(v -> exportScheduleToJson());
 
-        // 5. Danger Zone: Delete All Logic
         btnDeleteAll.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Delete All Lectures?")
                     .setMessage("Are you sure you want to delete all lectures? This action cannot be undone.")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        // 1. Cancel all notifications first
+                        //cancel notifications
                         List<Lecture> allLectures = RoomDB.getInstance(this).mainDAO().getAll();
                         NotificationScheduler scheduler = new NotificationScheduler(this);
                         for(Lecture lecture : allLectures){
                             scheduler.cancelSingleLecture(lecture);
                         }
 
-                        // 2. Wipe the database
+                        //remove the lectures
                         RoomDB.getInstance(this).mainDAO().deleteAll();
                         Toast.makeText(this, "Schedule wiped clean.", Toast.LENGTH_SHORT).show();
                     })
@@ -166,7 +165,7 @@ public class ImportExportActivity extends AppCompatActivity {
             return;
         }
 
-        // SANITIZER: Removes markdown blockquotes if AI includes them
+        //validation and editing the text
         if (rawJson.startsWith("```json")) {
             rawJson = rawJson.replace("```json", "").replace("```", "").trim();
         } else if (rawJson.startsWith("```")) {
@@ -180,12 +179,12 @@ public class ImportExportActivity extends AppCompatActivity {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
 
-                // optString tries to find the key. If the key is missing or null, it uses the fallback value (the second parameter) instead of crashing!
+                //finds key if not found uses default string
                 String code = obj.optString("code", "");
                 String name = obj.optString("name", "Unknown Course");
                 String prof = obj.optString("prof", "");
                 String section = obj.optString("section", "");
-                String credit = obj.optString("credit", ""); // Changed default to empty string
+                String credit = obj.optString("credit", "");
                 String room = obj.optString("room", "");
                 String day = obj.optString("day", "SUNDAY").toUpperCase();
                 String starttime = obj.optString("starttime", "8:00 AM");

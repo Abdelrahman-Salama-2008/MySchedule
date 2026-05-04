@@ -15,6 +15,7 @@ public class NotificationReceiver extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         String lectureName = intent.getStringExtra("lecture_name");
+        int minutes_before = intent.getIntExtra("minutes_before", 0);
 
         //set up the NotificationManager
         NotificationManager manager = context.getSystemService(NotificationManager.class);
@@ -23,7 +24,7 @@ public class NotificationReceiver extends BroadcastReceiver
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "lecture_channel")
                 .setSmallIcon(R.drawable.clock)
                 .setContentTitle("Class starting soon!")
-                .setContentText(lectureName + " starts in 45 minutes.")
+                .setContentText(lectureName + " starts in " + minutes_before + " minutes.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
