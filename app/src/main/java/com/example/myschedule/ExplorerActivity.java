@@ -299,8 +299,8 @@ public class ExplorerActivity extends AppCompatActivity {
             String time2 = lecture2.getStarttime();
 
             try {
-                LocalTime t1 = LocalTime.parse(time1, myFormat);
-                LocalTime t2 = LocalTime.parse(time2, myFormat);
+                LocalTime t1 = TimeConverters.convertTime(time1);
+                LocalTime t2 = TimeConverters.convertTime(time2);
                 return t1.compareTo(t2);
             } catch (Exception e) {
                 return 0;
@@ -340,13 +340,12 @@ public class ExplorerActivity extends AppCompatActivity {
                     });
                 }
 
-                if(lecture.getRoom().equalsIgnoreCase("Online")) {
-                    indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
-                    roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
-                } else {
-                    indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
-                    roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
-                }
+                // Apply theme color to indicator, primary icons and time text
+                int themeColor = getResources().getColor(lecture.getRoom().equalsIgnoreCase("Online") ? R.color.color_online : R.color.color_attend);
+                indicator.setBackgroundColor(themeColor);
+                roomIcon.setColorFilter(themeColor);
+                ((ImageView) lectureCard.findViewById(R.id.person_icon)).setColorFilter(themeColor);
+                ((ImageView) lectureCard.findViewById(R.id.time_icon)).setColorFilter(themeColor);
 
                 TextView code = lectureCard.findViewById(R.id.lecture_code);
                 TextView name = lectureCard.findViewById(R.id.lecture_name);
@@ -355,7 +354,12 @@ public class ExplorerActivity extends AppCompatActivity {
                 TextView credit = lectureCard.findViewById(R.id.Lecture_credit);
                 TextView day = lectureCard.findViewById(R.id.lecture_day);
                 TextView time = lectureCard.findViewById(R.id.lecture_time);
+                time.setTextColor(themeColor);
                 TextView room = lectureCard.findViewById(R.id.lecture_room);
+
+                // Ensure card background is standard
+                ((com.google.android.material.card.MaterialCardView)lectureCard).setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.white)));
+
                 Button editButton = lectureCard.findViewById(R.id.edit_button);
 
                 Button deleteButton = lectureCard.findViewById(R.id.delete_button);

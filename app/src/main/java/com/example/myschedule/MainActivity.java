@@ -235,26 +235,12 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
 
-                    if (lecture.getRoom().equalsIgnoreCase("Online")) { //online style card
-                        indicator.setBackgroundColor(getResources().getColor(R.color.color_online));
-                        roomIcon.setColorFilter(getResources().getColor(R.color.color_online));
-                    } else { //attend style card
-                        indicator.setBackgroundColor(getResources().getColor(R.color.color_attend));
-                        roomIcon.setColorFilter(getResources().getColor(R.color.color_attend));
-                    }
+                    //indecator logic
+                    boolean isOnline = lecture.getRoom().equalsIgnoreCase("Online");
+                    int themeColor = getResources().getColor(isOnline ? R.color.color_online : R.color.color_attend);
 
-                    if (TimeConverters.convertTime(lecture.getStarttime()).isBefore(LocalTime.now()) && TimeConverters.convertTime(lecture.getEndtime()).isAfter(LocalTime.now())) {//current lecture
-                        lectureCard.setCardBackgroundColor(getResources().getColor(R.color.live));
-                        if (counter == 1) {
-                            timeLeft = Duration.between(LocalTime.now(), TimeConverters.convertTime(lecture.getEndtime()));
-                            timeLeftText.setText("Lecture ends in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
-                        }
-                    } else {
-                        if (counter == 1) {
-                            timeLeft = Duration.between(currentTime, TimeConverters.convertTime(lecture.getStarttime()));
-                            timeLeftText.setText("Next Lecture in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
-                        }
-                    }
+                    indicator.setBackgroundColor(themeColor);
+                    roomIcon.setColorFilter(themeColor);
 
                     TextView code = lectureCard.findViewById(R.id.lecture_code);
                     TextView name = lectureCard.findViewById(R.id.lecture_name);
@@ -264,6 +250,62 @@ public class MainActivity extends AppCompatActivity {
                     TextView day = lectureCard.findViewById(R.id.lecture_day);
                     TextView time = lectureCard.findViewById(R.id.lecture_time);
                     TextView room = lectureCard.findViewById(R.id.lecture_room);
+                    ImageView personIcon = lectureCard.findViewById(R.id.person_icon);
+                    ImageView timeIcon = lectureCard.findViewById(R.id.time_icon);
+
+                    // live/ future logic
+                    LocalTime startTime = TimeConverters.convertTime(lecture.getStarttime());
+                    LocalTime endTime = TimeConverters.convertTime(lecture.getEndtime());
+                    boolean isLive = startTime.isBefore(currentTime) && endTime.isAfter(currentTime);
+
+                    if (isLive) {
+                        lectureCard.setCardBackgroundColor(getResources().getColor(R.color.live));
+
+                        // live lecture colors
+                        int primaryText = getResources().getColor(R.color.text_on_live);
+                        int secondaryText = getResources().getColor(R.color.text_secondary_on_live);
+
+                        name.setTextColor(primaryText);
+                        room.setTextColor(primaryText);
+                        code.setTextColor(secondaryText);
+                        prof.setTextColor(secondaryText);
+                        section.setTextColor(secondaryText);
+                        credit.setTextColor(secondaryText);
+                        day.setTextColor(secondaryText);
+                        time.setTextColor(getResources().getColor(R.color.black));
+
+                        // icons colors
+                        personIcon.setColorFilter(secondaryText);
+                        timeIcon.setColorFilter(secondaryText);
+                        roomIcon.setColorFilter(primaryText); // Override theme color for room icon in live mode
+
+                        if (counter == 1) {
+                            timeLeft = Duration.between(currentTime, endTime);
+                            timeLeftText.setText("Lecture ends in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
+                        }
+                    } else {
+                        lectureCard.setCardBackgroundColor(getResources().getColor(R.color.white));
+
+                        // Standard colors
+                        name.setTextColor(getResources().getColor(R.color.text_primary));
+                        room.setTextColor(getResources().getColor(R.color.text_primary));
+                        code.setTextColor(getResources().getColor(R.color.text_secondary));
+                        prof.setTextColor(getResources().getColor(R.color.text_secondary));
+                        section.setTextColor(getResources().getColor(R.color.text_secondary));
+                        credit.setTextColor(getResources().getColor(R.color.text_secondary));
+                        day.setTextColor(getResources().getColor(R.color.text_secondary));
+
+                        // Icons and time colored to match theme, other text remains standard
+                        time.setTextColor(themeColor);
+                        timeIcon.setColorFilter(themeColor);
+                        personIcon.setColorFilter(themeColor);
+                        roomIcon.setColorFilter(themeColor);
+
+                        if (counter == 1) {
+                            timeLeft = Duration.between(currentTime, startTime);
+                            timeLeftText.setText("Next Lecture in " + timeLeft.toHours() + " Hours " + timeLeft.toMinutes() % 60 + " Minutes");
+                        }
+                    }
 
                     lectureCard.findViewById(R.id.edit_button).setVisibility(View.GONE);
                     lectureCard.findViewById(R.id.delete_button).setVisibility(View.GONE);

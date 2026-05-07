@@ -2,6 +2,9 @@ package com.example.myschedule;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -15,6 +18,7 @@ import android.widget.TimePicker;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 
 //database imports
@@ -49,13 +53,13 @@ public class AddLectureActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        android.content.SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("isDarkMode", false);
 
         if (isDarkMode) {
-            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
-            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
 
         super.onCreate(savedInstanceState);
@@ -110,6 +114,7 @@ public class AddLectureActivity extends AppCompatActivity {
         daySpinner = findViewById(R.id.day_spinner);
         reminderContainer = findViewById(R.id.reminder_container);
         link = findViewById(R.id.Course_Link);
+        TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
 
         onlineText = onlineSwitch.isChecked();
 
@@ -128,6 +133,37 @@ public class AddLectureActivity extends AppCompatActivity {
 
         // Dynamic visibility for Reminder Spinner
         reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
+        //theme change logic
+        if (isDarkMode) {
+            btnThemeToggle.setText("🌚");
+        } else {
+            btnThemeToggle.setText("😎");
+        }
+
+        btnThemeToggle.setOnClickListener(v -> {
+            try {
+                View view = getWindow().getDecorView();
+                Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                view.draw(canvas);
+                MainActivity.screenshot = bitmap;
+            } catch (Exception e) {
+                MainActivity.screenshot = null;
+            }
+
+            boolean currentMode = sharedPreferences.getBoolean("isDarkMode", false);
+            boolean newMode = !currentMode;
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isDarkMode", newMode);
+            editor.apply();
+
+            if (newMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+        });
 
         notification.setOnCheckedChangeListener((buttonView, isChecked) -> {
             reminderContainer.setVisibility(isChecked ? View.VISIBLE : View.GONE);

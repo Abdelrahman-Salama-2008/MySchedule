@@ -34,16 +34,17 @@ public class ImportExportActivity extends AppCompatActivity {
             "Use EXACTLY these keys for each object: 'code', 'name', 'prof', 'section', 'credit', 'room', 'day', 'starttime', 'endtime', 'link'. " +
             "CRITICAL RULES: " +
             "1. NO EXTRA KEYS: Ignore and discard any extra information that does not fit into the exact keys listed above. " +
-            "2. TRANSLATE TO ENGLISH: Translate ALL extracted data (course names, professors, etc.) into English. The final JSON output MUST be entirely in English. " +
+            "2. TRANSLATE TO ENGLISH: The final JSON output MUST be entirely in English. " +
             "3. DAYS: Ensure days are fully spelled out and uppercase in English (e.g., 'SUNDAY', 'MONDAY'). " +
-            "4. MISSING DATA: If any data is missing (such as credit, prof, section, or link), DO NOT use null. You MUST include the key and set its value to an empty string \"\". " +
-            "5. ONLINE CLASSES: If a class is online (عن بعد), set the room strictly to 'Online'. " +
-            "6. MULTI-DAY CLASSES: If a course occurs on multiple days, you MUST create a completely separate JSON object for EACH day. " +
-            "7. UNIVERSAL TIME RULE: The 'starttime' and 'endtime' MUST be in 'h:mm a' format (e.g., '2:00 PM', '10:30 AM'). " +
-            "-> IF the provided schedule uses period numbers (e.g., 1, 2) instead of exact times, look at the prompt to see if I provided a time-mapping table. " +
-            "-> IF I did NOT provide a time mapping, DO NOT GENERATE THE JSON YET. Reply ONLY with: 'Your schedule uses periods. Please reply with your university's time table (e.g., Period 1 = 8:00 AM to 8:50 AM) so I can generate accurate times.' " +
-            "-> IF I refuse to provide the times or ask you to guess, make a smart logical guess (e.g., assuming Period 1 starts at 8:00 AM) and generate the JSON. " +
-            "8. CREDIT HOURS: Look for a number followed by or preceded by the Arabic letter 'س' (e.g., 'س3' or '4س') in the course details. This represents the 'credit' hours. Extract ONLY the number as a string (e.g., '3' or '4'). " +
+            "4. MISSING DATA: If any data is missing, include the key and set its value to \"\". " +
+            "5. MULTI-DAY CLASSES: If a course occurs on multiple days, you MUST create a completely separate JSON object for EACH day. " +
+            "6. TIME FORMATTING: All 'starttime' and 'endtime' must be in 'h:mm a' format (e.g., '2:00 PM'). " +
+            "7. DYNAMIC ORIENTATION: Before extracting data, identify the header row (Days) and header column (Times/Periods). Determine if the table is Left-to-Right or Right-to-Left based on the sequence of days (e.g., if 'Sunday' is on the far right, the table is RTL). " +
+            "8. PERIOD DETECTION: If the schedule uses numbers (1, 2, 3) instead of times, search the provided text for a 'Time Table' or 'Legend' that defines those periods. If no legend exists, ask me: 'Your schedule uses periods. Please provide the time mapping.' " +
+            "9. CROSS-REFERENCING: I am providing multiple data sources (a grid and a list). Match the Course Code (e.g., SE1101) from the list to the corresponding slot in the grid to combine Professor, Credits, Room, and Time into one object. " +
+            "10. CONSECUTIVE PERIODS: If a course occupies multiple back-to-back periods (e.g., Periods 3 and 4), merge them into one object. The start time is the beginning of the first period and the end time is the completion of the last period. " +
+            "11. NAME & CLASSIFICATION: Identify if the class is Theoretical (نظري), Practical (عملي), or Activity (نشاط). The 'name' key MUST contain the course title followed by the type in parentheses. Example: 'Calculus (Theory)'. " +
+            "12. DATA INTEGRITY: Ensure the Room and Section correctly match the specific time slot extracted from the grid. " +
             "Here is my schedule data: \n\n[PASTE YOUR SCHEDULE/IMAGE TEXT HERE]";
 
     @Override
