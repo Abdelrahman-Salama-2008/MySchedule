@@ -1,11 +1,15 @@
 package com.example.myschedule;
 
+import android.app.AlarmManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,6 +94,22 @@ public class ExplorerActivity extends AppCompatActivity {
 
         overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_slow);
         setContentView(R.layout.activity_explorer);
+
+        // Check for Alarm Permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+        }
+
+        // Check for Android 13+ Notification Permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
 
         //theme logic
         if (MainActivity.screenshot != null) {
@@ -364,13 +384,31 @@ public class ExplorerActivity extends AppCompatActivity {
 
                 Button deleteButton = lectureCard.findViewById(R.id.delete_button);
                 deleteButton.setVisibility(View.VISIBLE);
+
                 SwitchCompat notification_incard = lectureCard.findViewById(R.id.notification_incard);
                 notification_incard.setChecked(lecture.getWantsNotification());
                 notification_incard.setVisibility(View.VISIBLE);
 
+                SwitchCompat alarm_incard = lectureCard.findViewById(R.id.alarm_incard);
+                alarm_incard.setChecked(lecture.isAlarmEnabled());
+                alarm_incard.setVisibility(View.VISIBLE);
+
                 notification_incard.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     lecture.setWantsNotification(isChecked);
                     RoomDB.getInstance(ExplorerActivity.this).mainDAO().updateNotification(lecture.getId(), isChecked);
+
+                    NotificationScheduler scheduler = new NotificationScheduler(ExplorerActivity.this);
+                    if (isChecked) {
+                        scheduler.scheduleSingleLecture(lecture);
+                    } else {
+                        scheduler.cancelSingleLecture(lecture);
+                    }
+                });
+
+                // NEW BLOCK: Wiring up the Alarm Switch on the card
+                alarm_incard.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    lecture.setAlarmEnabled(isChecked);
+                    RoomDB.getInstance(ExplorerActivity.this).mainDAO().updateAlarm(lecture.getId(), isChecked);
 
                     NotificationScheduler scheduler = new NotificationScheduler(ExplorerActivity.this);
                     if (isChecked) {
@@ -425,6 +463,8 @@ public class ExplorerActivity extends AppCompatActivity {
                     intent.putExtra("LECTURE_ROOM", lecture.getRoom());
                     intent.putExtra("LECTURE_NOTIFICATION", lecture.getWantsNotification());
                     intent.putExtra("LECTURE_REMINDER", lecture.getReminderMinutes());
+                    intent.putExtra("LECTURE_ALARM", lecture.isAlarmEnabled());
+                    intent.putExtra("LECTURE_ALARM_MINUTES", lecture.getAlarmMinutes());
                     intent.putExtra("LECTURE_LINK", lecture.getLink());
 
                     startActivity(intent);

@@ -43,7 +43,7 @@ public class ImportExportActivity extends AppCompatActivity {
             "8. PERIOD DETECTION: If the schedule uses numbers (1, 2, 3) instead of times, search the provided text for a 'Time Table' or 'Legend' that defines those periods. If no legend exists, ask me: 'Your schedule uses periods. Please provide the time mapping.' " +
             "9. CROSS-REFERENCING: I am providing multiple data sources (a grid and a list). Match the Course Code (e.g., SE1101) from the list to the corresponding slot in the grid to combine Professor, Credits, Room, and Time into one object. " +
             "10. CONSECUTIVE PERIODS: If a course occupies multiple back-to-back periods (e.g., Periods 3 and 4), merge them into one object. The start time is the beginning of the first period and the end time is the completion of the last period. " +
-            "11. NAME & CLASSIFICATION: Identify if the class is Theoretical (نظري), Practical (عملي), or Activity (نشاط). The 'name' key MUST contain the course title followed by the type in parentheses. Example: 'Calculus (Theory)'. " +
+            "11. NAME & CLASSIFICATION: Identify if the class is Theoretical (نظري) or Practical (عملي). The 'name' key MUST contain the course title followed by the type in parentheses. Example: 'Calculus (Theory)'. " +
             "12. DATA INTEGRITY: Ensure the Room and Section correctly match the specific time slot extracted from the grid. " +
             "Here is my schedule data: \n\n[PASTE YOUR SCHEDULE/IMAGE TEXT HERE]";
 
@@ -193,9 +193,11 @@ public class ImportExportActivity extends AppCompatActivity {
                 String link = obj.optString("link", "");
 
                 boolean wantsNotification = false;
-                int reminderMinutes = 15;
+                int reminderMinutes = 5;
+                boolean wantsAlarm = false;
+                int alarmMinutes = 5;
 
-                Lecture newLecture = new Lecture(code, name, prof, section, credit, day, starttime, endtime, room, wantsNotification, reminderMinutes, link);
+                Lecture newLecture = new Lecture(code, name, prof, section, credit, day, starttime, endtime, room, wantsNotification, reminderMinutes, link, wantsAlarm, alarmMinutes);
                 RoomDB.getInstance(this).mainDAO().insert(newLecture);
                 importedCount++;
             }

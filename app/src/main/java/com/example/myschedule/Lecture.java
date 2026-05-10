@@ -41,12 +41,18 @@ public class Lecture implements Serializable{
     private boolean wantsNotification;
 
     @ColumnInfo(name = "reminderMinutes")
-    private int reminderMinutes;
+    private int reminderMinutes = 5;
 
     @ColumnInfo(name = "link")
     private String link;
 
-    public Lecture(String code, String name, String prof, String section, String credit, String day, String starttime, String endtime, String room, boolean wantsNotification,int reminderMinutes, String link) {
+    @ColumnInfo(name = "isAlarmEnabled")
+    private boolean isAlarmEnabled = false;
+
+    @ColumnInfo(name = "alarmMinutes")
+    private int alarmMinutes = 5;
+
+    public Lecture(String code, String name, String prof, String section, String credit, String day, String starttime, String endtime, String room, boolean wantsNotification,int reminderMinutes, String link, boolean isAlarmEnabled, int alarmMinutes) {
         this.code = code;
         this.name = name;
         this.prof = prof;
@@ -60,10 +66,29 @@ public class Lecture implements Serializable{
         this.wantsNotification = wantsNotification;
         this.reminderMinutes = reminderMinutes;
         this.link = link;
+        this.isAlarmEnabled = isAlarmEnabled;
+        this.alarmMinutes = alarmMinutes;
     }
 
     public Lecture() {
     }
+
+    public boolean isAlarmEnabled() {
+        return isAlarmEnabled;
+    }
+
+    public void setAlarmEnabled(boolean alarmEnabled) {
+        isAlarmEnabled = alarmEnabled;
+    }
+
+    public int getAlarmMinutes() {
+        return alarmMinutes;
+    }
+
+    public void setAlarmMinutes(int alarmMinutes) {
+        this.alarmMinutes = alarmMinutes;
+    }
+
 
     public boolean getWantsNotification()
     {

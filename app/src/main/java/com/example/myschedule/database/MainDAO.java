@@ -14,17 +14,23 @@ import java.util.List;
 
 @Dao
 public interface MainDAO {
-    @Insert(onConflict = REPLACE) //add
-    void insert(Lecture lecture);
+    @Insert(onConflict = REPLACE)//add
+    long insert(Lecture lecture);
+
     @Delete
     void delete(Lecture lecture);
+
     @Query("SELECT * FROM LectureDetails")
     List<Lecture> getAll();
+
     @Query("DELETE FROM LectureDetails")
     void deleteAll();
 
     @Query("UPDATE LectureDetails SET wantsNotification = :wantsNotification WHERE id = :id")
     void updateNotification(int id, boolean wantsNotification);
+
+    @Query("UPDATE LectureDetails SET isAlarmEnabled = :isAlarmEnabled WHERE id = :id")
+    void updateAlarm(int id, boolean isAlarmEnabled);
 
     @Update
     void update(Lecture lecture);

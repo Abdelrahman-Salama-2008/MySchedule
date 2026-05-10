@@ -69,14 +69,33 @@ public class MainActivity extends AppCompatActivity {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Lecture Reminders";
-            String description = "Notifications for upcoming lectures";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel("lecture_channel", name, importance);
-            channel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             if (notificationManager != null) {
+                // 1. Lecture Reminders Channel
+                CharSequence name = "Lecture Reminders";
+                String description = "Notifications for upcoming lectures";
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+                NotificationChannel channel = new NotificationChannel("lecture_channel", name, importance);
+                channel.setDescription(description);
+                channel.enableVibration(true);
+                channel.enableLights(true);
+
+                android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build();
+                channel.setSound(android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION), audioAttributes);
                 notificationManager.createNotificationChannel(channel);
+
+                // 2. Alarms Channel (for Full-Screen intent)
+                NotificationChannel alarmChannel = new NotificationChannel("alarm_channel", "Alarms", NotificationManager.IMPORTANCE_HIGH);
+                alarmChannel.setDescription("High priority alarms for classes");
+                alarmChannel.setSound(null, null); // Handled manually by MediaPlayer in AlarmReceiver
+                alarmChannel.enableVibration(true);
+                alarmChannel.setVibrationPattern(new long[]{0, 500, 250, 500, 250, 500});
+                alarmChannel.enableLights(true);
+                alarmChannel.setLightColor(android.graphics.Color.RED);
+                notificationManager.createNotificationChannel(alarmChannel);
             }
         }
     }
@@ -309,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
 
                     lectureCard.findViewById(R.id.edit_button).setVisibility(View.GONE);
                     lectureCard.findViewById(R.id.delete_button).setVisibility(View.GONE);
-                    lectureCard.findViewById(R.id.notification_incard).setVisibility(View.GONE);
+                    lectureCard.findViewById(R.id.switches_container).setVisibility(View.GONE);
 
                     code.setText("Code: " + lecture.getCode());
                     name.setText("Course: " + lecture.getName());

@@ -7,34 +7,30 @@ import android.content.Intent;
 
 import androidx.core.app.NotificationCompat;
 
-
-public class NotificationReceiver extends BroadcastReceiver
-{
+public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent)
-    {
+    public void onReceive(Context context, Intent intent) {
         String lectureName = intent.getStringExtra("lecture_name");
         int minutes_before = intent.getIntExtra("minutes_before", 0);
+        int notificationID = intent.getIntExtra("notification_id", (int) System.currentTimeMillis());
 
-        //set up the NotificationManager
         NotificationManager manager = context.getSystemService(NotificationManager.class);
 
-        // build Notification
+        String title = "Class starting soon!";
+        String content = lectureName + " starts in " + minutes_before + " minutes.";
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "lecture_channel")
-                .setSmallIcon(R.drawable.clock)
-                .setContentTitle("Class starting soon!")
-                .setContentText(lectureName + " starts in " + minutes_before + " minutes.")
+                .setSmallIcon(R.drawable.clock) // Make sure this icon exists
+                .setContentTitle(title)
+                .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true);
 
-        //show it
-        int notificationID = (int) System.currentTimeMillis();
-        if (manager != null)
-        {
+        if (manager != null) {
             manager.notify(notificationID, builder.build());
         }
     }
-
-    }
-
+}

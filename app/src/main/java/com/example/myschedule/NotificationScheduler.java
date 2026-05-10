@@ -1,4 +1,5 @@
 package com.example.myschedule;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -13,36 +14,59 @@ public class NotificationScheduler {
     private Context context;
     private AlarmManager alarmManager;
 
+    // Static helper to make it easy to call from AddLectureActivity
+    public static void scheduleNotificationAndAlarm(Context context, Lecture lecture) {
+        new NotificationScheduler(context).scheduleSingleLecture(lecture);
+    }
+
     public NotificationScheduler(Context context) {
         this.context = context;
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-
     public void scheduleSingleLecture(Lecture lecture) {
-        if (!lecture.getWantsNotification()) return;
+        // Cancel existing to avoid duplicates
+        cancelSingleLecture(lecture);
 
-        Calendar calendar = calculateAlarmTime(lecture);
-        PendingIntent pendingIntent = getPendingIntent(lecture);
+        if (lecture.getWantsNotification()) {
+            Calendar calendar = calculateAlarmTime(lecture, lecture.getReminderMinutes());
+            PendingIntent pendingIntent = getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes());
+            schedule(calendar, pendingIntent, false);
+        }
 
+        if (lecture.isAlarmEnabled()) {
+            Calendar calendar = calculateAlarmTime(lecture, lecture.getAlarmMinutes());
+            PendingIntent pendingIntent = getPendingIntent(lecture, "ALARM", lecture.getAlarmMinutes());
+            schedule(calendar, pendingIntent, true);
+        }
+    }
+
+    private void schedule(Calendar calendar, PendingIntent pendingIntent, boolean isAlarm) {
         if (alarmManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
+            if (isAlarm) {
+                // setAlarmClock is the most reliable way to wake up the device and bypass Doze
+                AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(), pendingIntent);
+                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                    } else {
+                        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                    }
+                } else {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                 }
-            } else {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
             }
         }
     }
 
     public void cancelSingleLecture(Lecture lecture) {
-        PendingIntent pendingIntent = getPendingIntent(lecture);
         if (alarmManager != null) {
-            alarmManager.cancel(pendingIntent);
+            alarmManager.cancel(getPendingIntent(lecture, "NOTIFICATION", 0));
+            alarmManager.cancel(getPendingIntent(lecture, "ALARM", 0));
         }
     }
-
 
     public void scheduleAllLectures() {
         ArrayList<Lecture> lectures = ScheduleData.getLectures(context);
@@ -51,8 +75,7 @@ public class NotificationScheduler {
         }
     }
 
-
-    private Calendar calculateAlarmTime(Lecture lecture) {
+    private Calendar calculateAlarmTime(Lecture lecture, int minutesBefore) {
         Calendar calendar = Calendar.getInstance();
         LocalTime startTime = TimeConverters.convertTime(lecture.getStarttime());
 
@@ -68,7 +91,7 @@ public class NotificationScheduler {
             }
         }
 
-        calendar.add(Calendar.MINUTE, -lecture.getReminderMinutes());
+        calendar.add(Calendar.MINUTE, -minutesBefore);
 
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 7);
@@ -76,11 +99,21 @@ public class NotificationScheduler {
         return calendar;
     }
 
-    private PendingIntent getPendingIntent(Lecture lecture) {
+    private PendingIntent getPendingIntent(Lecture lecture, String type, int minutesBefore) {
         int id = lecture.getId();
-        Intent intent = new Intent(context, NotificationReceiver.class);
+        Intent intent;
+
+        if ("ALARM".equals(type)) {
+            id += 100000; // Large offset to avoid collision
+            intent = new Intent(context, AlarmReceiver.class); // Routes to ALARM logic
+        } else {
+            intent = new Intent(context, NotificationReceiver.class); // Routes to NOTIFICATION logic
+        }
+
         intent.putExtra("lecture_name", lecture.getName());
-        intent.putExtra("minutes_before", lecture.getReminderMinutes());
+        intent.putExtra("minutes_before", minutesBefore);
+        intent.putExtra("room", lecture.getRoom());
+        intent.putExtra("notification_id", id);
 
         return PendingIntent.getBroadcast(
                 context,

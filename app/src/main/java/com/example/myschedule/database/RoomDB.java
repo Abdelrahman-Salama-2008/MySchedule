@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 
 import com.example.myschedule.Lecture;
 
-@Database(entities = Lecture.class, version = 1, exportSchema = false)
+@Database(entities = Lecture.class, version = 2, exportSchema = false)
 public abstract class RoomDB extends RoomDatabase {
     private static RoomDB database;
     private static String databaseName = "LectureDetails";

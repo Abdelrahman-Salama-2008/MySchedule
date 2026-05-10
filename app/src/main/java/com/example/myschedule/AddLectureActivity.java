@@ -36,13 +36,13 @@ public class AddLectureActivity extends AppCompatActivity {
     static List<Lecture> lectures;
     static RoomDB database;
     EditText code, name, prof, section, credit, room, link;
-    SwitchCompat onlineSwitch, notification;
+    SwitchCompat onlineSwitch, notification, alarmSwitch;
     Button addButton, cancelButton;
     String startTime, endTime;
     String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day, linktext;
-    boolean onlineText, notificationText;
-    Spinner daySpinner, reminderSpinner;
-    LinearLayout reminderContainer;
+    boolean onlineText, notificationText, alarmSwitchText;
+    Spinner daySpinner, reminderSpinner, alarmSpinner;
+    LinearLayout reminderContainer, alarmContainer;
 
 
     @Override
@@ -113,10 +113,13 @@ public class AddLectureActivity extends AppCompatActivity {
         room = findViewById(R.id.Room_number);
         daySpinner = findViewById(R.id.day_spinner);
         reminderContainer = findViewById(R.id.reminder_container);
+        alarmContainer = findViewById(R.id.alarm_reminder_container);
         link = findViewById(R.id.Course_Link);
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
+        alarmSwitch = findViewById(R.id.alarm_Switch);
 
         onlineText = onlineSwitch.isChecked();
+        alarmSwitchText = alarmSwitch.isChecked();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, days);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -131,8 +134,15 @@ public class AddLectureActivity extends AppCompatActivity {
         reminderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         reminderSpinner.setAdapter(reminderAdapter);
 
-        // Dynamic visibility for Reminder Spinner
+        //alarmSpinner logic
+        alarmSpinner = findViewById(R.id.alarm_reminder_spinner);
+        ArrayAdapter<String> alarmAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, reminderOptions);
+        alarmAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        alarmSpinner.setAdapter(alarmAdapter);
+
+        // Dynamic visibility for Reminder Spinner and Alarm Spinner
         reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
+        alarmContainer.setVisibility(alarmSwitch.isChecked() ? View.VISIBLE : View.GONE);
         //theme change logic
         if (isDarkMode) {
             btnThemeToggle.setText("🌚");
@@ -169,6 +179,11 @@ public class AddLectureActivity extends AppCompatActivity {
             reminderContainer.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
 
+        alarmSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            alarmContainer.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
+
         if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
             title.setText("Edit Lecture");
             addButton.setText("Update");
@@ -188,11 +203,23 @@ public class AddLectureActivity extends AppCompatActivity {
             notification.setChecked(getIntent().getBooleanExtra("LECTURE_NOTIFICATION", false));
             reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
 
+            alarmSwitch.setChecked(getIntent().getBooleanExtra("LECTURE_ALARM", false));
+            alarmContainer.setVisibility(alarmSwitch.isChecked() ? View.VISIBLE : View.GONE);
+
             // Set the saved reminder value
-            int savedMins = getIntent().getIntExtra("LECTURE_REMINDER", 15);
+            int savedMins = getIntent().getIntExtra("LECTURE_REMINDER", 5);
             for (int i = 0; i < reminderValues.length; i++) {
                 if (reminderValues[i] == savedMins) {
                     reminderSpinner.setSelection(i);
+                    break;
+                }
+            }
+
+            // Set the saved alarm value
+            int savedAlarmMins = getIntent().getIntExtra("LECTURE_ALARM_MINUTES", 5);
+            for (int i = 0; i < reminderValues.length; i++) {
+                if (reminderValues[i] == savedAlarmMins) {
+                    alarmSpinner.setSelection(i);
                     break;
                 }
             }
@@ -246,6 +273,7 @@ public class AddLectureActivity extends AppCompatActivity {
                 starttimesaved = startTime;
                 endtimesaved = endTime;
                 linktext = link.getText().toString();
+                alarmSwitchText = alarmSwitch.isChecked();
 
                 if(linktext.isEmpty())
                 {
@@ -258,6 +286,7 @@ public class AddLectureActivity extends AppCompatActivity {
 
                 // Grab the selected reminder time
                 int selectedReminderMinutes = reminderValues[reminderSpinner.getSelectedItemPosition()];
+                int selectedAlarmMinutes = reminderValues[alarmSpinner.getSelectedItemPosition()];
 
                 if(onlineText)
                     roomText = "Online";
@@ -267,13 +296,16 @@ public class AddLectureActivity extends AppCompatActivity {
                 if(isValid()) {
                     if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
                         // Pass selectedReminderMinutes to the constructor
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes, linktext);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes, linktext, alarmSwitchText, selectedAlarmMinutes);
                         int passedId = getIntent().getIntExtra("LECTURE_ID", -1);
                         lecture.setId(passedId);
                         database.mainDAO().update(lecture);
+                        NotificationScheduler.scheduleNotificationAndAlarm(AddLectureActivity.this, lecture);
                     } else {
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes,linktext);
-                        database.mainDAO().insert(lecture);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes,linktext, alarmSwitchText, selectedAlarmMinutes);
+                        long id = database.mainDAO().insert(lecture);
+                        lecture.setId((int) id);
+                        NotificationScheduler.scheduleNotificationAndAlarm(AddLectureActivity.this, lecture);
                     }
                     finish();
                 }

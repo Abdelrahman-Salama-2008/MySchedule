@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_main">#121212</color>
+    <color name="off_white">#1E1E1E</color>
+    <color name="white">#242424</color>
+    <color name="light_grey">#2C2C2C</color>
+    <color name="border_grey">#374151</color>
+    <color name="dark_grey">#9CA3AF</color>
+
+    <color name="black">#F3F4F6</color>
+    <color name="text_header">#F9FAFB</color>
+    <color name="text_body">#D1D5DB</color>
+    <color name="text_primary">#E5E7EB</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_hint">#6B7280</color>
+    <color name="brand_blue">#60A5FA</color>
+    <color name="color_online">#33C9FF</color>
+    <color name="color_attend">#FF8A33</color>
+    <color name="live">#80CBC4</color>
+    <color name="success_green">#34D399</color>
+    <color name="danger_red">#F87171</color>
+    <color name="ic_launcher_background">#121212</color>
+    <color name="text_on_live">#1A1A1A</color>
+    <color name="text_secondary_on_live">#4A4A4A</color>
+</resources>

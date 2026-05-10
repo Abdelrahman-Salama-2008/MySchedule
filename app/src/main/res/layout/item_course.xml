@@ -209,16 +209,36 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/notification_incard"
+                <LinearLayout
+                    android:id="@+id/switches_container"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Remind Me"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:maxLines="1"
-                    android:textColor="@color/text_secondary"/>
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/notification_incard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Notify"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:textColor="@color/text_secondary"
+                        android:minHeight="32dp"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/alarm_incard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Alarm"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:textColor="@color/text_secondary"
+                        android:minHeight="32dp"/>
+                </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/edit_button"

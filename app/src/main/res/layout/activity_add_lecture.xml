@@ -136,6 +136,49 @@
                         android:minHeight="48dp"
                         android:backgroundTint="@color/text_primary" />
                 </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/border_grey"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/alarm_Switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enable Alarm"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"
+                    android:textColor="@color/text_secondary"/>
+
+                <LinearLayout
+                    android:id="@+id/alarm_reminder_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ring before:"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/alarm_reminder_spinner"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:backgroundTint="@color/text_primary" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <EditText
