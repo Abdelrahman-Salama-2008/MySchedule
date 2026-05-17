@@ -188,7 +188,7 @@
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="16dp"
-                android:hint="Course Code (e.g. SE1101)"
+                android:hint="Course Code(e.g. SE1101)(Optional)"
                 android:textColorHint="@color/text_secondary"
                 android:textColor="@color/text_primary"
                 android:inputType="text" />
@@ -212,7 +212,7 @@
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="16dp"
-                android:hint="Professor Name"
+                android:hint="Professor Name(Optional)"
                 android:textColorHint="@color/text_secondary"
                 android:textColor="@color/text_primary"
                 android:inputType="text" />
@@ -230,7 +230,7 @@
                     android:layout_height="50dp"
                     android:background="@drawable/bg_input_field"
                     android:paddingHorizontal="16dp"
-                    android:hint="Section"
+                    android:hint="Section(Optional)"
                     android:textColorHint="@color/text_secondary"
                     android:textColor="@color/text_primary"
                     android:inputType="text" />
@@ -246,7 +246,7 @@
                     android:layout_height="50dp"
                     android:background="@drawable/bg_input_field"
                     android:paddingHorizontal="16dp"
-                    android:hint="Credit Hours"
+                    android:hint="Credit Hours(Optional)"
                     android:textColorHint="@color/text_secondary"
                     android:textColor="@color/text_primary"
                     android:inputType="number" />
@@ -259,7 +259,7 @@
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="16dp"
-                android:hint="Room Number (e.g. 25-1.026)"
+                android:hint="Room Number(e.g. 25-1.026)"
                 android:textColorHint="@color/text_secondary"
                 android:textColor="@color/text_primary"
                 android:inputType="text" />
@@ -271,7 +271,7 @@
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="16dp"
-                android:hint="🔗 Link (Optional)"
+                android:hint="🔗 Link(Optional)"
                 android:textColorHint="@color/text_secondary"
                 android:textColor="@color/text_primary"
                 android:inputType="textUri" />

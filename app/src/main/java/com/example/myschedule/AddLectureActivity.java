@@ -7,9 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -68,9 +70,9 @@ public class AddLectureActivity extends AppCompatActivity {
 
         // --- THEME TRANSITION LOGIC ---
         if (MainActivity.screenshot != null) {
-            final android.widget.ImageView overlay = new android.widget.ImageView(this);
+            final ImageView overlay = new ImageView(this);
             overlay.setImageBitmap(MainActivity.screenshot);
-            android.view.ViewGroup root = (android.view.ViewGroup) getWindow().getDecorView();
+            ViewGroup root = (ViewGroup) getWindow().getDecorView();
             root.addView(overlay);
 
             // Fast transition and robust clearing
@@ -86,7 +88,7 @@ public class AddLectureActivity extends AppCompatActivity {
                     });
         }
 
-        androidx.activity.EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_lecture);
 
         //database
@@ -196,8 +198,10 @@ public class AddLectureActivity extends AppCompatActivity {
 
             if(getIntent().getStringExtra("LECTURE_ROOM").equalsIgnoreCase("Online")) {
                 onlineSwitch.setChecked(true);
+                room.setVisibility(View.GONE);
             } else {
                 room.setText(getIntent().getStringExtra("LECTURE_ROOM"));
+                room.setVisibility(View.VISIBLE);
             }
 
             notification.setChecked(getIntent().getBooleanExtra("LECTURE_NOTIFICATION", false));
@@ -343,8 +347,9 @@ public class AddLectureActivity extends AppCompatActivity {
         boolean valid = true;
 
         if (code.getText().toString().trim().isEmpty()) {
-            code.setError("Course Code is required");
-            valid = false;
+            //code.setError("Course Code is required");
+            //valid = false;
+            code.setText("");
         }
 
         if (name.getText().toString().trim().isEmpty()) {
@@ -353,17 +358,20 @@ public class AddLectureActivity extends AppCompatActivity {
         }
 
         if (prof.getText().toString().trim().isEmpty()) {
-            prof.setError("Professor Name is required");
-            valid = false;
+            //prof.setError("Professor Name is required");
+            //valid = false;
+            prof.setText("");
         }
 
         if (section.getText().toString().trim().isEmpty()) {
-            section.setError("Section is required");
-            valid = false;
+            //section.setError("Section is required");
+            //valid = false;
+            section.setText("");
         }
         if (credit.getText().toString().trim().isEmpty()) {
-            credit.setError("Credits are required");
-            valid = false;
+            //credit.setError("Credits are required");
+            //valid = false;
+            credit.setText("");
         }
 
         if (!onlineSwitch.isChecked() && room.getText().toString().trim().isEmpty()) {

@@ -21,8 +21,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     public static MediaPlayer mediaPlayer;
     public static Vibrator vibrator;
-    // v12 ensures a completely fresh channel state
-    private static final String CHANNEL_ID = "alarm_channel_v12";
+    private static final String CHANNEL_ID = "alarm_channel_v1";
 
     @Override
     public void onReceive(Context context, Intent intent) {

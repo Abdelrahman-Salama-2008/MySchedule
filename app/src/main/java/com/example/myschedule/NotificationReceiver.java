@@ -21,7 +21,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         String content = lectureName + " starts in " + minutes_before + " minutes.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "lecture_channel")
-                .setSmallIcon(R.drawable.clock) // Make sure this icon exists
+                .setSmallIcon(R.drawable.clock)
                 .setContentTitle(title)
                 .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

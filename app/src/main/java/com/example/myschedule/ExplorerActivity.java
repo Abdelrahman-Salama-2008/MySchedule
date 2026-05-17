@@ -360,8 +360,8 @@ public class ExplorerActivity extends AppCompatActivity {
                     });
                 }
 
-                // Apply theme color to indicator, primary icons and time text
-                int themeColor = getResources().getColor(lecture.getRoom().equalsIgnoreCase("Online") ? R.color.color_online : R.color.color_attend);
+                // Apply theme color using modern ContextCompat
+                int themeColor = androidx.core.content.ContextCompat.getColor(this, lecture.getRoom().equalsIgnoreCase("Online") ? R.color.color_online : R.color.color_attend);
                 indicator.setBackgroundColor(themeColor);
                 roomIcon.setColorFilter(themeColor);
                 ((ImageView) lectureCard.findViewById(R.id.person_icon)).setColorFilter(themeColor);
@@ -376,6 +376,8 @@ public class ExplorerActivity extends AppCompatActivity {
                 TextView time = lectureCard.findViewById(R.id.lecture_time);
                 time.setTextColor(themeColor);
                 TextView room = lectureCard.findViewById(R.id.lecture_room);
+                LinearLayout profContainer = lectureCard.findViewById(R.id.prof_container);
+
 
                 // Ensure card background is standard
                 ((com.google.android.material.card.MaterialCardView)lectureCard).setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.white)));
@@ -397,32 +399,44 @@ public class ExplorerActivity extends AppCompatActivity {
                     lecture.setWantsNotification(isChecked);
                     RoomDB.getInstance(ExplorerActivity.this).mainDAO().updateNotification(lecture.getId(), isChecked);
 
-                    NotificationScheduler scheduler = new NotificationScheduler(ExplorerActivity.this);
-                    if (isChecked) {
-                        scheduler.scheduleSingleLecture(lecture);
-                    } else {
-                        scheduler.cancelSingleLecture(lecture);
-                    }
+                    // Re-schedule: this will cancel existing and only set what is still enabled
+                    new NotificationScheduler(ExplorerActivity.this).scheduleSingleLecture(lecture);
                 });
 
-                // NEW BLOCK: Wiring up the Alarm Switch on the card
+                // Wiring up the Alarm Switch on the card
                 alarm_incard.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     lecture.setAlarmEnabled(isChecked);
                     RoomDB.getInstance(ExplorerActivity.this).mainDAO().updateAlarm(lecture.getId(), isChecked);
 
-                    NotificationScheduler scheduler = new NotificationScheduler(ExplorerActivity.this);
-                    if (isChecked) {
-                        scheduler.scheduleSingleLecture(lecture);
-                    } else {
-                        scheduler.cancelSingleLecture(lecture);
-                    }
+                    new NotificationScheduler(ExplorerActivity.this).scheduleSingleLecture(lecture);
                 });
+                // show and hide card fields
+                if(lecture.getCode() == null || lecture.getCode().isEmpty())
+                    code.setVisibility(View.GONE);
+                else {
+                    code.setText("Code: " + lecture.getCode());
+                    code.setVisibility(View.VISIBLE);
+                }
+                if(lecture.getProf() == null || lecture.getProf().isEmpty())
+                    profContainer.setVisibility(View.GONE);
+                else{
+                    prof.setText(lecture.getProf());
+                    profContainer.setVisibility(View.VISIBLE);
+                }
+                if(lecture.getSection() == null || lecture.getSection().isEmpty())
+                    section.setVisibility(View.GONE);
+                else{
+                    section.setText("Section: " + lecture.getSection());
+                    section.setVisibility(View.VISIBLE);
+                }
+                if(lecture.getCredit() == null || lecture.getCredit().isEmpty())
+                    credit.setVisibility(View.GONE);
+                else{
+                    credit.setText("Credit Hours: " + lecture.getCredit());
+                    credit.setVisibility(View.VISIBLE);
+                }
 
-                code.setText("Code: " + lecture.getCode());
                 name.setText("Course: " + lecture.getName());
-                prof.setText(lecture.getProf());
-                section.setText("Section: " + lecture.getSection());
-                credit.setText("Credit Hours: " + lecture.getCredit());
                 day.setText("Day: " + lecture.getDay());
                 time.setText(lecture.getStarttime() + " - " + lecture.getEndtime());
                 room.setText(lecture.getRoom());

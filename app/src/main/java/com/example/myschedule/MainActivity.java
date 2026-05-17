@@ -88,13 +88,13 @@ public class MainActivity extends AppCompatActivity {
                 notificationManager.createNotificationChannel(channel);
 
                 // 2. Alarms Channel (for Full-Screen intent)
-                NotificationChannel alarmChannel = new NotificationChannel("alarm_channel", "Alarms", NotificationManager.IMPORTANCE_HIGH);
+                NotificationChannel alarmChannel = new NotificationChannel("alarm_channel_v1", "Alarms", NotificationManager.IMPORTANCE_HIGH);
                 alarmChannel.setDescription("High priority alarms for classes");
                 alarmChannel.setSound(null, null); // Handled manually by MediaPlayer in AlarmReceiver
-                alarmChannel.enableVibration(true);
-                alarmChannel.setVibrationPattern(new long[]{0, 500, 250, 500, 250, 500});
+                alarmChannel.enableVibration(false); // Handled manually in AlarmReceiver for better reliability
                 alarmChannel.enableLights(true);
                 alarmChannel.setLightColor(android.graphics.Color.RED);
+                alarmChannel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
                 notificationManager.createNotificationChannel(alarmChannel);
             }
         }
@@ -271,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
                     TextView room = lectureCard.findViewById(R.id.lecture_room);
                     ImageView personIcon = lectureCard.findViewById(R.id.person_icon);
                     ImageView timeIcon = lectureCard.findViewById(R.id.time_icon);
+                    LinearLayout profContainer = lectureCard.findViewById(R.id.prof_container);
 
                     // live/ future logic
                     LocalTime startTime = TimeConverters.convertTime(lecture.getStarttime());
@@ -326,15 +327,37 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
+                    // show and hide card fields
+                    if(lecture.getCode() == null || lecture.getCode().isEmpty())
+                        code.setVisibility(View.GONE);
+                    else {
+                        code.setText("Code: " + lecture.getCode());
+                        code.setVisibility(View.VISIBLE);
+                    }
+                    if(lecture.getProf() == null || lecture.getProf().isEmpty())
+                        profContainer.setVisibility(View.GONE);
+                    else{
+                        prof.setText(lecture.getProf());
+                        profContainer.setVisibility(View.VISIBLE);
+                    }
+                    if(lecture.getSection() == null || lecture.getSection().isEmpty())
+                        section.setVisibility(View.GONE);
+                    else{
+                        section.setText("Section: " + lecture.getSection());
+                        section.setVisibility(View.VISIBLE);
+                    }
+                    if(lecture.getCredit() == null || lecture.getCredit().isEmpty())
+                        credit.setVisibility(View.GONE);
+                    else{
+                        credit.setText("Credit Hours: " + lecture.getCredit());
+                        credit.setVisibility(View.VISIBLE);
+                    }
+
                     lectureCard.findViewById(R.id.edit_button).setVisibility(View.GONE);
                     lectureCard.findViewById(R.id.delete_button).setVisibility(View.GONE);
                     lectureCard.findViewById(R.id.switches_container).setVisibility(View.GONE);
 
-                    code.setText("Code: " + lecture.getCode());
                     name.setText("Course: " + lecture.getName());
-                    prof.setText(lecture.getProf());
-                    section.setText("Section: " + lecture.getSection());
-                    credit.setText("Credit Hours: " + lecture.getCredit());
                     day.setText("Day: " + lecture.getDay());
                     time.setText(lecture.getStarttime() + " - " + lecture.getEndtime());
                     room.setText(lecture.getRoom());

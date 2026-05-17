@@ -63,8 +63,8 @@ public class NotificationScheduler {
 
     public void cancelSingleLecture(Lecture lecture) {
         if (alarmManager != null) {
-            alarmManager.cancel(getPendingIntent(lecture, "NOTIFICATION", 0));
-            alarmManager.cancel(getPendingIntent(lecture, "ALARM", 0));
+            alarmManager.cancel(getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes()));
+            alarmManager.cancel(getPendingIntent(lecture, "ALARM", lecture.getAlarmMinutes()));
         }
     }
 
