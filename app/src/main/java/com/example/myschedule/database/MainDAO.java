@@ -43,7 +43,7 @@ public interface MainDAO {
     @Delete
     void deleteAlarm(AlarmEntity alarm);
 
-    @Query("SELECT * FROM alarms WHERE lecture_id = :lectureId")
+    @Query("SELECT * FROM alarms WHERE lecture_id = :lectureId ORDER BY trigger_offset_minutes ASC")
     List<AlarmEntity> getAlarmsForLecture(int lectureId);
 
     @Query("SELECT * FROM alarms WHERE is_active = 1")

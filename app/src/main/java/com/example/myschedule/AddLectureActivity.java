@@ -384,6 +384,7 @@ public class AddLectureActivity extends AppCompatActivity {
             }
             if (!exists) {
                 temporaryAlarms.add(new AlarmEntity(0, offset));
+                temporaryAlarms.sort((a1, a2) -> Integer.compare(a1.getTriggerOffsetMinutes(), a2.getTriggerOffsetMinutes()));
                 adapter.notifyDataSetChanged();
                 updateAlarmSummary();
             } else {
@@ -399,6 +400,7 @@ public class AddLectureActivity extends AppCompatActivity {
         if (temporaryAlarms.isEmpty()) {
             tvAlarmSummary.setText("No alarms set");
         } else {
+            temporaryAlarms.sort((a1, a2) -> Integer.compare(a1.getTriggerOffsetMinutes(), a2.getTriggerOffsetMinutes()));
             StringBuilder summary = new StringBuilder();
             for (int i = 0; i < temporaryAlarms.size(); i++) {
                 int mins = temporaryAlarms.get(i).getTriggerOffsetMinutes();

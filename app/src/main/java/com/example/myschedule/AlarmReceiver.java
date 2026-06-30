@@ -33,9 +33,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             return;
         }
 
-        // Confirm receiver triggered
-        Toast.makeText(context, context.getString(R.string.alarm_triggered), Toast.LENGTH_LONG).show();
-
         int id = intent.getIntExtra("notification_id", (int) System.currentTimeMillis());
         String lectureName = intent.getStringExtra("lecture_name");
         String room = intent.getStringExtra("room");
