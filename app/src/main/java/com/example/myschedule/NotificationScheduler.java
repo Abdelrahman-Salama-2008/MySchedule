@@ -6,9 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import com.example.myschedule.database.AlarmEntity;
+import com.example.myschedule.database.RoomDB;
+
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.List;
 
 public class NotificationScheduler {
     private Context context;
@@ -25,19 +29,24 @@ public class NotificationScheduler {
     }
 
     public void scheduleSingleLecture(Lecture lecture) {
-        // Cancel existing to avoid duplicates
+        // 1. Cancel existing notifications for this lecture
         cancelSingleLecture(lecture);
 
+        // 2. Schedule standard notification if enabled
         if (lecture.getWantsNotification()) {
             Calendar calendar = calculateAlarmTime(lecture, lecture.getReminderMinutes());
-            PendingIntent pendingIntent = getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes());
+            PendingIntent pendingIntent = getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes(), 0);
             schedule(calendar, pendingIntent, false);
         }
 
-        if (lecture.isAlarmEnabled()) {
-            Calendar calendar = calculateAlarmTime(lecture, lecture.getAlarmMinutes());
-            PendingIntent pendingIntent = getPendingIntent(lecture, "ALARM", lecture.getAlarmMinutes());
-            schedule(calendar, pendingIntent, true);
+        // 3. Schedule all multiple alarms from DB
+        List<AlarmEntity> alarms = RoomDB.getInstance(context).mainDAO().getAlarmsForLecture(lecture.getId());
+        for (AlarmEntity alarm : alarms) {
+            if (alarm.isActive()) {
+                Calendar calendar = calculateAlarmTime(lecture, alarm.getTriggerOffsetMinutes());
+                PendingIntent pendingIntent = getPendingIntent(lecture, "ALARM", alarm.getTriggerOffsetMinutes(), alarm.getId());
+                schedule(calendar, pendingIntent, true);
+            }
         }
     }
 
@@ -62,9 +71,16 @@ public class NotificationScheduler {
     }
 
     public void cancelSingleLecture(Lecture lecture) {
-        if (alarmManager != null) {
-            alarmManager.cancel(getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes()));
-            alarmManager.cancel(getPendingIntent(lecture, "ALARM", lecture.getAlarmMinutes()));
+        if (alarmManager == null) return;
+
+        // Cancel the base notification
+        alarmManager.cancel(getPendingIntent(lecture, "NOTIFICATION", lecture.getReminderMinutes(), 0));
+
+        // Cancel all possible alarms for this lecture
+        // Since we don't know the exact alarm IDs that might be scheduled, we have to query
+        List<AlarmEntity> alarms = RoomDB.getInstance(context).mainDAO().getAlarmsForLecture(lecture.getId());
+        for (AlarmEntity alarm : alarms) {
+            alarmManager.cancel(getPendingIntent(lecture, "ALARM", alarm.getTriggerOffsetMinutes(), alarm.getId()));
         }
     }
 
@@ -99,25 +115,28 @@ public class NotificationScheduler {
         return calendar;
     }
 
-    private PendingIntent getPendingIntent(Lecture lecture, String type, int minutesBefore) {
-        int id = lecture.getId();
+    private PendingIntent getPendingIntent(Lecture lecture, String type, int minutesBefore, int alarmId) {
+        int requestCode;
         Intent intent;
 
         if ("ALARM".equals(type)) {
-            id += 100000; // Large offset to avoid collision
-            intent = new Intent(context, AlarmReceiver.class); // Routes to ALARM logic
+            // Unique RequestCode for each alarm: Offset + LectureID * multiplier + AlarmID
+            // Ensuring unique codes across all lectures and their individual multiple alarms
+            requestCode = 200000 + (lecture.getId() * 100) + alarmId;
+            intent = new Intent(context, AlarmReceiver.class);
         } else {
-            intent = new Intent(context, NotificationReceiver.class); // Routes to NOTIFICATION logic
+            requestCode = 100000 + lecture.getId();
+            intent = new Intent(context, NotificationReceiver.class);
         }
 
         intent.putExtra("lecture_name", lecture.getName());
         intent.putExtra("minutes_before", minutesBefore);
         intent.putExtra("room", lecture.getRoom());
-        intent.putExtra("notification_id", id);
+        intent.putExtra("notification_id", requestCode);
 
         return PendingIntent.getBroadcast(
                 context,
-                id,
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );

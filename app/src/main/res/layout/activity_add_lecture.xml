@@ -158,25 +158,28 @@
                     android:id="@+id/alarm_reminder_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_configure_alarms"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Configure Alarms"
+                        android:textColor="@color/text_primary"
+                        app:strokeColor="@color/border_grey"
+                        app:cornerRadius="8dp"
+                        android:layout_marginBottom="8dp"/>
 
                     <TextView
+                        android:id="@+id/tv_alarm_summary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ring before:"
+                        android:text="No alarms set"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="4dp"/>
-
-                    <Spinner
-                        android:id="@+id/alarm_reminder_spinner"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:minHeight="48dp"
-                        android:backgroundTint="@color/text_primary" />
+                        android:textSize="12sp"
+                        android:layout_marginBottom="12dp"/>
                 </LinearLayout>
 
             </LinearLayout>

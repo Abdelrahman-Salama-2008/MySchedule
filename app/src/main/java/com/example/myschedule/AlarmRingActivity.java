@@ -53,10 +53,10 @@ public class AlarmRingActivity extends AppCompatActivity {
         int notificationId = getIntent().getIntExtra("notification_id", -1);
 
         dismissBtn.setOnClickListener(v -> {
-            // 1. Stop the alarm sound and vibration
+            // Stop the alarm sound and vibration
             AlarmReceiver.stopAlarm(this);
 
-            // 2. Cancel the notification
+            // Cancel the notification
             if (notificationId != -1) {
                 android.app.NotificationManager manager = (android.app.NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
                 if (manager != null) {
@@ -64,7 +64,7 @@ public class AlarmRingActivity extends AppCompatActivity {
                 }
             }
 
-            // 3. Close and kill
+            // Close and kill
             finishAndKillProcess();
         });
     }

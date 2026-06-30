@@ -9,6 +9,7 @@ import androidx.room.Update;
 import static androidx.room.OnConflictStrategy.REPLACE;
 
 import com.example.myschedule.Lecture;
+import com.example.myschedule.database.AlarmEntity;
 
 import java.util.List;
 
@@ -34,4 +35,20 @@ public interface MainDAO {
 
     @Update
     void update(Lecture lecture);
+
+    // Alarm related queries
+    @Insert(onConflict = REPLACE)
+    void insertAlarm(AlarmEntity alarm);
+
+    @Delete
+    void deleteAlarm(AlarmEntity alarm);
+
+    @Query("SELECT * FROM alarms WHERE lecture_id = :lectureId")
+    List<AlarmEntity> getAlarmsForLecture(int lectureId);
+
+    @Query("SELECT * FROM alarms WHERE is_active = 1")
+    List<AlarmEntity> getAllActiveAlarms();
+    
+    @Query("DELETE FROM alarms WHERE lecture_id = :lectureId")
+    void deleteAlarmsForLecture(int lectureId);
 }

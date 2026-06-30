@@ -24,10 +24,17 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 
 //database imports
+import com.example.myschedule.database.AlarmEntity;
 import com.example.myschedule.database.RoomDB;
+import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalTime;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.app.AlertDialog;
 
 public class AddLectureActivity extends AppCompatActivity {
 
@@ -43,8 +50,15 @@ public class AddLectureActivity extends AppCompatActivity {
     String startTime, endTime;
     String roomText,codeText, nameText, profText, sectionText, creditText, starttimesaved, endtimesaved, day, linktext;
     boolean onlineText, notificationText, alarmSwitchText;
-    Spinner daySpinner, reminderSpinner, alarmSpinner;
+    Spinner daySpinner, reminderSpinner;
     LinearLayout reminderContainer, alarmContainer;
+    
+    // Multiple Alarms
+    private List<AlarmEntity> temporaryAlarms = new ArrayList<>();
+    private MaterialButton btnConfigureAlarms;
+    private TextView tvAlarmSummary;
+    private int[] alarmOffsetValues = {0, 5, 10, 15, 30, 45, 60};
+    private String[] alarmOffsetOptions = {"At start time", "5 mins before", "10 mins before", "15 mins before", "30 mins before", "45 mins before", "1 hour before"};
 
 
     @Override
@@ -119,6 +133,9 @@ public class AddLectureActivity extends AppCompatActivity {
         link = findViewById(R.id.Course_Link);
         TextView btnThemeToggle = findViewById(R.id.btn_theme_toggle);
         alarmSwitch = findViewById(R.id.alarm_Switch);
+        
+        btnConfigureAlarms = findViewById(R.id.btn_configure_alarms);
+        tvAlarmSummary = findViewById(R.id.tv_alarm_summary);
 
         onlineText = onlineSwitch.isChecked();
         alarmSwitchText = alarmSwitch.isChecked();
@@ -136,15 +153,14 @@ public class AddLectureActivity extends AppCompatActivity {
         reminderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         reminderSpinner.setAdapter(reminderAdapter);
 
-        //alarmSpinner logic
-        alarmSpinner = findViewById(R.id.alarm_reminder_spinner);
-        ArrayAdapter<String> alarmAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, reminderOptions);
-        alarmAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        alarmSpinner.setAdapter(alarmAdapter);
-
         // Dynamic visibility for Reminder Spinner and Alarm Spinner
         reminderContainer.setVisibility(notification.isChecked() ? View.VISIBLE : View.GONE);
         alarmContainer.setVisibility(alarmSwitch.isChecked() ? View.VISIBLE : View.GONE);
+        
+        btnConfigureAlarms.setOnClickListener(v -> showAlarmsDialog());
+
+        setupTimeButton(this);
+
         //theme change logic
         if (isDarkMode) {
             btnThemeToggle.setText("🌚");
@@ -210,20 +226,18 @@ public class AddLectureActivity extends AppCompatActivity {
             alarmSwitch.setChecked(getIntent().getBooleanExtra("LECTURE_ALARM", false));
             alarmContainer.setVisibility(alarmSwitch.isChecked() ? View.VISIBLE : View.GONE);
 
+            // Fetch existing alarms for edit mode
+            int lectureId = getIntent().getIntExtra("LECTURE_ID", -1);
+            if (lectureId != -1) {
+                temporaryAlarms = database.mainDAO().getAlarmsForLecture(lectureId);
+                updateAlarmSummary();
+            }
+
             // Set the saved reminder value
             int savedMins = getIntent().getIntExtra("LECTURE_REMINDER", 5);
             for (int i = 0; i < reminderValues.length; i++) {
                 if (reminderValues[i] == savedMins) {
                     reminderSpinner.setSelection(i);
-                    break;
-                }
-            }
-
-            // Set the saved alarm value
-            int savedAlarmMins = getIntent().getIntExtra("LECTURE_ALARM_MINUTES", 5);
-            for (int i = 0; i < reminderValues.length; i++) {
-                if (reminderValues[i] == savedAlarmMins) {
-                    alarmSpinner.setSelection(i);
                     break;
                 }
             }
@@ -290,7 +304,6 @@ public class AddLectureActivity extends AppCompatActivity {
 
                 // Grab the selected reminder time
                 int selectedReminderMinutes = reminderValues[reminderSpinner.getSelectedItemPosition()];
-                int selectedAlarmMinutes = reminderValues[alarmSpinner.getSelectedItemPosition()];
 
                 if(onlineText)
                     roomText = "Online";
@@ -300,15 +313,23 @@ public class AddLectureActivity extends AppCompatActivity {
                 if(isValid()) {
                     if(getIntent().getBooleanExtra("IS_EDIT_MODE", false)) {
                         // Pass selectedReminderMinutes to the constructor
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes, linktext, alarmSwitchText, selectedAlarmMinutes);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes, linktext, alarmSwitchText, 0);
                         int passedId = getIntent().getIntExtra("LECTURE_ID", -1);
                         lecture.setId(passedId);
                         database.mainDAO().update(lecture);
+                        
+                        // Save Multiple Alarms
+                        saveAlarmsToDB(passedId);
+                        
                         NotificationScheduler.scheduleNotificationAndAlarm(AddLectureActivity.this, lecture);
                     } else {
-                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes,linktext, alarmSwitchText, selectedAlarmMinutes);
+                        Lecture lecture = new Lecture(codeText, nameText, profText, sectionText, creditText, day, starttimesaved, endtimesaved, roomText, notificationText, selectedReminderMinutes,linktext, alarmSwitchText, 0);
                         long id = database.mainDAO().insert(lecture);
                         lecture.setId((int) id);
+                        
+                        // Save Multiple Alarms
+                        saveAlarmsToDB((int) id);
+                        
                         NotificationScheduler.scheduleNotificationAndAlarm(AddLectureActivity.this, lecture);
                     }
                     finish();
@@ -316,6 +337,81 @@ public class AddLectureActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void saveAlarmsToDB(int lectureId) {
+        database.mainDAO().deleteAlarmsForLecture(lectureId);
+        if (alarmSwitch.isChecked()) {
+            for (AlarmEntity alarm : temporaryAlarms) {
+                alarm.setLectureId(lectureId);
+                database.mainDAO().insertAlarm(alarm);
+            }
+        }
+    }
+
+    private void showAlarmsDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_configure_alarms, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        RecyclerView rvAlarms = dialogView.findViewById(R.id.rv_alarms);
+        Spinner spinnerOffsets = dialogView.findViewById(R.id.spinner_alarm_offsets);
+        MaterialButton btnAdd = dialogView.findViewById(R.id.btn_add_alarm_offset);
+        MaterialButton btnClose = dialogView.findViewById(R.id.btn_close_alarms);
+
+        rvAlarms.setLayoutManager(new LinearLayoutManager(this));
+        AlarmAdapter adapter = new AlarmAdapter(temporaryAlarms, alarm -> {
+            temporaryAlarms.remove(alarm);
+            rvAlarms.getAdapter().notifyDataSetChanged();
+            updateAlarmSummary();
+        });
+        rvAlarms.setAdapter(adapter);
+
+        ArrayAdapter<String> offsetAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, alarmOffsetOptions);
+        offsetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerOffsets.setAdapter(offsetAdapter);
+
+        btnAdd.setOnClickListener(v -> {
+            int offset = alarmOffsetValues[spinnerOffsets.getSelectedItemPosition()];
+            // Avoid duplicates
+            boolean exists = false;
+            for (AlarmEntity a : temporaryAlarms) {
+                if (a.getTriggerOffsetMinutes() == offset) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                temporaryAlarms.add(new AlarmEntity(0, offset));
+                adapter.notifyDataSetChanged();
+                updateAlarmSummary();
+            } else {
+                Toast.makeText(this, "Alarm already added", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void updateAlarmSummary() {
+        if (temporaryAlarms.isEmpty()) {
+            tvAlarmSummary.setText("No alarms set");
+        } else {
+            StringBuilder summary = new StringBuilder();
+            for (int i = 0; i < temporaryAlarms.size(); i++) {
+                int mins = temporaryAlarms.get(i).getTriggerOffsetMinutes();
+                if (mins == 0) summary.append("Start");
+                else summary.append(mins).append("m");
+                
+                if (i < temporaryAlarms.size() - 1) summary.append(", ");
+            }
+            tvAlarmSummary.setText(summary.toString());
+        }
+    }
+
+    private void setupTimeButton(Context context) {
         timeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
