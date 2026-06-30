@@ -22,21 +22,29 @@ public class AlarmReceiver extends BroadcastReceiver {
     public static MediaPlayer mediaPlayer;
     public static Vibrator vibrator;
     private static final String CHANNEL_ID = "alarm_channel_v1";
+    public static final String ACTION_DISMISS_ALARM = "com.example.myschedule.ACTION_DISMISS_ALARM";
+    public static final String ACTION_CLOSE_ALARM_ACTIVITY = "com.example.myschedule.ACTION_CLOSE_ALARM_ACTIVITY";
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (ACTION_DISMISS_ALARM.equals(intent.getAction())) {
+            int notificationId = intent.getIntExtra("notification_id", -1);
+            handleDismiss(context, notificationId);
+            return;
+        }
+
         // Confirm receiver triggered
-        Toast.makeText(context, "Alarm Triggered!", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, context.getString(R.string.alarm_triggered), Toast.LENGTH_LONG).show();
 
         int id = intent.getIntExtra("notification_id", (int) System.currentTimeMillis());
         String lectureName = intent.getStringExtra("lecture_name");
         String room = intent.getStringExtra("room");
         int minutes = intent.getIntExtra("minutes_before", 0);
 
-        // 1. Start Sound and Vibration immediately
+        // Start Sound and Vibration immediately
         startAlarm(context);
 
-        // 2. Prepare Intent for Full-Screen Activity
+        // Prepare Intent for Full-Screen Activity
         Intent wakeUpIntent = new Intent(context, AlarmRingActivity.class);
         wakeUpIntent.putExtra("lecture_name", lectureName);
         wakeUpIntent.putExtra("room", room);
@@ -51,17 +59,28 @@ public class AlarmReceiver extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        // 3. Setup Notification Channel
+        // Prepare Dismiss Action for Notification
+        Intent dismissIntent = new Intent(context, AlarmReceiver.class);
+        dismissIntent.setAction(ACTION_DISMISS_ALARM);
+        dismissIntent.putExtra("notification_id", id);
+        PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(
+                context,
+                id + 1,
+                dismissIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        // 4. Setup Notification Channel
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Lecture Alarms",
+                    context.getString(R.string.notification_channel_name),
                     NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Critical notifications for your classes");
+            channel.setDescription(context.getString(R.string.notification_channel_desc));
             channel.setSound(null, null); // Sound handled by MediaPlayer
-            channel.enableVibration(false); // Disable channel vibration to avoid conflicts with manual vibration
+            channel.enableVibration(false);
             channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
             
             if (notificationManager != null) {
@@ -69,36 +88,58 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
         }
 
-        // 4. Build Notification
+        // Build Notification
+        String title = context.getString(R.string.alarm_title_format, 
+                (lectureName != null ? lectureName : context.getString(R.string.class_placeholder)));
+        String details = context.getString(R.string.notification_details_format, 
+                minutes, (room != null ? room : context.getString(R.string.room_tba)));
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.clock)
-                .setContentTitle("WAKE UP: " + (lectureName != null ? lectureName : "Class"))
-                .setContentText("Room " + room + " in " + minutes + " mins")
+                .setContentTitle(title)
+                .setContentText(details)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setOngoing(true)
                 .setAutoCancel(false)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, 
+                        context.getString(R.string.notification_dismiss), dismissPendingIntent);
 
         if (notificationManager != null) {
             notificationManager.notify(id, builder.build());
         }
 
-        // 5. Force launch activity (works on some devices if unlocked)
+        // 6. Force launch activity
         try {
             context.startActivity(wakeUpIntent);
         } catch (Exception ignored) {}
+    }
+
+    private void handleDismiss(Context context, int notificationId) {
+        // Stop Sound/Vibration
+        stopAlarm(context);
+
+        // Cancel Notification
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null && notificationId != -1) {
+            manager.cancel(notificationId);
+        }
+
+        // Broadcast to Activity to close it
+        Intent closeIntent = new Intent(ACTION_CLOSE_ALARM_ACTIVITY);
+        closeIntent.setPackage(context.getPackageName());
+        context.sendBroadcast(closeIntent);
     }
 
     private void startAlarm(Context context) {
         Context appContext = context.getApplicationContext();
         stopAlarm(appContext);
 
-        // Vibration
         vibrator = (Vibrator) appContext.getSystemService(Context.VIBRATOR_SERVICE);
         if (vibrator != null && vibrator.hasVibrator()) {
-            long[] pattern = {0, 800, 400, 800, 400}; // Aggressive pattern
+            long[] pattern = {0, 800, 400, 800, 400};
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 AudioAttributes aa = new AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
@@ -110,7 +151,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
         }
 
-        // Sound
         try {
             Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (alarmUri == null) alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -123,13 +163,10 @@ public class AlarmReceiver extends BroadcastReceiver {
             mediaPlayer.setLooping(true);
             mediaPlayer.prepare();
             mediaPlayer.start();
-        } catch (Exception e) {
-            // fallback
-        }
+        } catch (Exception ignored) {}
     }
 
     public static void stopAlarm(Context context) {
-        // 1. Stop Audio
         if (mediaPlayer != null) {
             try {
                 if (mediaPlayer.isPlaying()) mediaPlayer.stop();
@@ -138,15 +175,12 @@ public class AlarmReceiver extends BroadcastReceiver {
             mediaPlayer = null;
         }
 
-        // 2. Stop Vibration
         try {
             if (context != null) {
-                // For modern Android (API 31+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     android.os.VibratorManager vm = (android.os.VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
                     if (vm != null) vm.cancel();
                 }
-                // Standard Vibrator cancel
                 Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 if (v != null) v.cancel();
             }

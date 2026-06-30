@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">MySchedule</string>
+    <string name="alarm_title_format">Time for %1$s!</string>
+    <string name="alarm_details_format">Starts in %1$d minutes\nGo to Room: %2$s</string>
+    <string name="notification_details_format">Starts in %1$d minutes. Room: %2$s</string>
+    <string name="class_placeholder">Class</string>
+    <string name="room_tba">TBA</string>
+    <string name="alarm_triggered">Alarm Triggered!</string>
+    <string name="notification_channel_name">Lecture Alarms</string>
+    <string name="notification_channel_desc">Critical notifications for your classes</string>
+    <string name="notification_dismiss">Dismiss</string>
 </resources>
